@@ -22,36 +22,33 @@ import (
 
 	"github.com/spf13/cobra"
 )
-// issueTransitionCmd represents the issueTransition command
-var issueTransitionCmd = &cobra.Command{
-	Use:   "transition ISSUE_KEY STATE",
-	Aliases: []string{"t"},
-	Short: "Transition issue status to given state",
-	Args: cobra.ExactArgs(2),
+
+// testWorkflowCmd represents the issueTransitionTest command
+var testWorkflowCmd = &cobra.Command{
+	Use:   "test ISSUE_KEY",
+	Short: "Run through all transitions to test workflow definition yaml file",
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		issueKey := args[0]
-		targetState := args[1]
-		workflow, err := cmd.PersistentFlags().GetString("workflow")
+		workflow, err := cmd.Flags().GetString("workflow")
 		if err != nil {
 			logger.ErrorLn(err)
 			os.Exit(1)
 		}
-		jiraApi.TransitionIssue(workflow, issueKey, targetState)
-		logger.SuccessF("Success issue '%s' is in status '%s'\n", issueKey, targetState)
+		jiraApi.TestTransitions(workflow, args[0])
+		logger.SuccessLn("issueTransitionTest PASSED")
 	},
 }
 
 func init() {
-	issueCmd.AddCommand(issueTransitionCmd)
+	issueCmd.AddCommand(testWorkflowCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// issueTransitionCmd.PersistentFlags().String("foo", "", "A help for foo")
-	issueTransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
+	//testWorkflowCmd.PersistentFlags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
+	testWorkflowCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// issueTransitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

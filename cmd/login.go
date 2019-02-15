@@ -70,9 +70,9 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	loginCmd.Flags().StringP("server", "s", "", "Jira server url")
-	loginCmd.Flags().StringP("user", "u", "", "Jira username")
-	loginCmd.Flags().StringP("password", "p", "", "Jira password")
+	loginCmd.Flags().StringP("server", "s", "", "Jira server url. Also read from JIRA_SERVER_URL env variable")
+	loginCmd.Flags().StringP("user", "u", "", "Jira username. Also read from JIRA_USER env variable")
+	loginCmd.Flags().StringP("password", "p", "", "Jira password. Also read from JIRA_PASSWORD env variable")
 	viper.BindPFlag("server_url", loginCmd.Flags().Lookup("server"))
 	viper.BindPFlag("user", loginCmd.Flags().Lookup("user"))
 	viper.BindPFlag("password", loginCmd.Flags().Lookup("password"))

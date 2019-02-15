@@ -89,3 +89,33 @@ To configure your bash shell to load completions for each session add following 
 ```bash
 . <(jira-cli completion)
 ```
+
+## Issue transition workflows
+issue transition command require workflow definition in yaml file. Default filename is `workflow.yaml` can be override by --workflow flag.
+### workflow structure
+```yaml
+workflow:
+  source status:
+    target status: transition name
+    default: default transition name
+```
+### example workflow definition
+```yaml
+workflow:
+  code review:
+    default: ready to test
+  in test:
+    done: done
+    default: bug found
+  to do:
+    rejected: reject
+    default: start progress
+  in progress:
+    default: code review
+  done:
+    default: reopen
+  rejected:
+    default: reopen
+```
+### corresponding Jira workflow
+![Alt text](docs/workflow.png?raw=true "Example Jira workflow")

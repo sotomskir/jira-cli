@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sotomskir/jira-cli/logger"
+	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
 	"os"
@@ -36,20 +37,36 @@ type Version struct {
 }
 
 type Project struct {
-	Id  string `json:"id"`
-	Key string `json:"key"`
+	Id   string `json:"id"`
+	Key  string `json:"key"`
 	Name string `json:"name"`
 }
 
 type Fields struct {
 	FixVersions []Version `json:"fixVersions"`
+	Status      Status    `json:"status"`
 }
 
 type Issue struct {
-	Id  string `json:"id"`
-	Key string `json:"key"`
+	Id      string `json:"id"`
+	Key     string `json:"key"`
 	Summary string `json:"summary"`
-	Fields Fields `json:"fields"`
+	Fields  Fields `json:"fields"`
+}
+
+type Status struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type Transition struct {
+	Id   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+type Transitions struct {
+	Transitions []Transition `json:"transitions,omitempty"`
+	Transition  Transition   `json:"transition,omitempty"`
 }
 
 func Initialize() {
@@ -59,8 +76,8 @@ func Initialize() {
 	// Headers for all request
 	resty.SetHeader("Accept", "application/json")
 	resty.SetHeaders(map[string]string{
-		"Content-Type":  "application/json",
-		"User-Agent":    "jira-cli",
+		"Content-Type": "application/json",
+		"User-Agent":   "jira-cli",
 	})
 }
 
@@ -94,11 +111,12 @@ func post(endpoint string, payload interface{}, response interface{}) {
 		logger.ErrorF("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 		os.Exit(1)
 	}
-
-	jsonErr := json.Unmarshal(res.Body(), response)
-	if jsonErr != nil {
-		logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		os.Exit(1)
+	if res.StatusCode() != 204 {
+		jsonErr := json.Unmarshal(res.Body(), response)
+		if jsonErr != nil {
+			logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+			os.Exit(1)
+		}
 	}
 }
 
@@ -206,7 +224,89 @@ func GetIssue(issueKey string) Issue {
 	return issue
 }
 
-func IssueTransition(issueKey string, targetState string)  {
-	logger.ErrorLn("Issue transition not implemented")
+func TransitionIssue(workflowPath string, issueKey string, targetStatus string) {
+	readWorkflow(workflowPath)
+	lowerTargetStatus := strings.ToLower(targetStatus)
+	viper.SetConfigFile(workflowPath)
+	viper.MergeInConfig()
+	workflow := viper.GetStringMap("workflow")
+	if workflow == nil {
+		logger.ErrorLn("workflow not present in config file")
+		os.Exit(1)
+	}
+	for i := 0; i < 20; i++ {
+		currentStatus := strings.ToLower(GetIssue(issueKey).Fields.Status.Name)
+		logger.InfoF("current status: '%s', target status: '%s'\n", currentStatus, lowerTargetStatus)
+		currentStatusTransitions := workflow[currentStatus]
+		if currentStatusTransitions == nil {
+			logger.ErrorF("workflow does not define transitions for status: %s\n", currentStatus)
+			os.Exit(1)
+		}
+		if currentStatus == targetStatus {
+			break
+		}
+		transition := GetTransitionByName(issueKey, getByNameOrDefault(cast.ToStringMap(currentStatusTransitions), targetStatus))
+		payload := Transitions{}
+		payload.Transition = transition
+		logger.InfoF("executing transition: '%s'\n", transition.Name)
+		post(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
+	}
+}
+
+func getByNameOrDefault(transitions map[string]interface{}, name string) string {
+	if val, ok := cast.ToStringMap(transitions)[name]; ok {
+		return cast.ToString(val)
+	}
+	if val, ok := cast.ToStringMap(transitions)["default"]; ok {
+		return cast.ToString(val)
+	}
+	logger.ErrorF("transition '%s' is not defined in workflow\n", name)
 	os.Exit(1)
+	return ""
+}
+
+func GetTransitionByName(issueKey string, transitionName string) Transition {
+	transitions := GetTransitions(issueKey)
+	for _, t := range transitions {
+		if strings.ToLower(t.Name) == transitionName {
+			return t
+		}
+	}
+	logger.ErrorF("transition '%s' is not found in transitions of issue: %s\n", transitionName, issueKey)
+	os.Exit(1)
+	return Transition{}
+}
+
+func GetTransitions(issueKey string) []Transition {
+	transitions := Transitions{}
+	get(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), &transitions)
+	return transitions.Transitions
+}
+
+func TestTransitions(workflowPath string, issueKey string) {
+	readWorkflow(workflowPath)
+	workflow := viper.GetStringMap("workflow")
+	if workflow == nil {
+		logger.ErrorLn("workflow not present in config file")
+		os.Exit(1)
+	}
+	for fromState := range workflow {
+		logger.InfoF("\tTesting transitions from state: '%s'\n", fromState)
+		TransitionIssue(workflowPath, issueKey, fromState)
+		for toState := range workflow {
+			logger.InfoF("\tto state: '%s'\n", toState)
+			TransitionIssue(workflowPath, issueKey, toState)
+		}
+	}
+}
+
+func readWorkflow(workflowPath string) {
+	if _, err := os.Stat(workflowPath); err != nil {
+		if os.IsNotExist(err) {
+			logger.ErrorF("File not found: %s\n", workflowPath)
+			os.Exit(1)
+		}
+	}
+	viper.SetConfigFile(workflowPath)
+	viper.MergeInConfig()
 }

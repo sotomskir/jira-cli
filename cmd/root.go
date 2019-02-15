@@ -60,7 +60,7 @@ func init() {
 	//rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "admin", "Jira password")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	}
+}
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
@@ -99,4 +99,3 @@ func initConfig() {
 	}
 	jiraApi.Initialize()
 }
-
