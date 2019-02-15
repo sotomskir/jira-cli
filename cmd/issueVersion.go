@@ -25,6 +25,9 @@ import (
 var issueVersionCmd = &cobra.Command{
 	Use:   "version ISSUE_KEY VERSION",
 	Short: "Set issue fix version",
+	Long: `Set issue fix version. 
+If version is already set it will not be overwritten. 
+If version does not exist it will be created`,
 	Aliases: []string{"v"},
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {

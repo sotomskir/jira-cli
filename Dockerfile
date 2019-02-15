@@ -1,6 +1,7 @@
 FROM golang:1.11-alpine as build
 RUN apk update && apk add --no-cache git
 RUN adduser -D jira
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 WORKDIR /go/src/github.com/sotomskir/jira-cli/
 ADD . .
 RUN go get -d -v

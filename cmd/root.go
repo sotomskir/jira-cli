@@ -83,12 +83,12 @@ func initConfig() {
 		viper.SetConfigName(".jira-cli")
 	}
 
+	viper.SetEnvPrefix("JIRA")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		//fmt.Println("Using config file:", viper.ConfigFileUsed())
-		jiraApi.Initialize(viper.GetString("server"), viper.GetString("auth"))
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
@@ -97,5 +97,6 @@ func initConfig() {
 		}
 		viper.WriteConfigAs(path.Join(home, "/.jira-cli.yaml"))
 	}
+	jiraApi.Initialize()
 }
 

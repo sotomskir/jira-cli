@@ -12,16 +12,18 @@ You can download pre-build binary here: https://github.com/sotomskir/jira-cli/re
 ## Usage
 First you must login to Jira server. jira-cli will store your credentials in configuration file ~/.jira-cli.yaml
 ```bash
-jira-cli login https://jira-server.example.com
+jira-cli login
 ```
 
 ```
-Login to http://jira-server.example.com
-Username: jira-user
-Password:
-Success, Logged in to http://jira-server.example.com
+JIRA server URL: https://someuser.atlassian.net
+Username: admin
+Password: 
+Success, Logged in to: http://someuser.atlassian.net as: admin
 ```
-To login in non interactive mode use -u and -p flags. After successful login you can start using commands.
+To login in non interactive mode use `--server`, `--user` and `--password` flags. 
+Alternately you can use jira-cli without login if you set environment variables: 
+`JIRA_SERVER_URL`, `JIRA_USER` and `JIRA_PASSWORD`. After successful login you can start using commands.
 To list available commands type:
 ```
 jira-cli --help

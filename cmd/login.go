@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"bufio"
-	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/sotomskir/jira-cli/logger"
@@ -32,21 +31,21 @@ import (
 	"time"
 )
 
-var user string
-var password string
-
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:     "login SERVER",
+	Use:     "login",
 	Aliases: []string{"l"},
 	Short:   "Login to Atlassian Jira server",
-	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		server := args[0]
-		logger.InfoF("Login to %s\n", server)
+		server := viper.GetString("server_url")
+		if server == "" {
+			server = getInput("JIRA server URL: ")
+		}
+		user := viper.GetString("user")
 		if user == "" {
 			user = getInput("Username: ")
 		}
+		password := viper.GetString("password")
 		if password == "" {
 			password = getPasswd()
 		}
@@ -55,7 +54,7 @@ var loginCmd = &cobra.Command{
 
 		if loggedIn {
 			saveConfig(server, user, password)
-			logger.SuccessF("Success, Logged in to %s\n", server)
+			logger.SuccessF("Success, Logged in to: %s as: %s\n", server, user)
 		}
 	},
 }
@@ -71,9 +70,12 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	loginCmd.Flags().StringVarP(&user, "user", "u", "", "Jira username")
-	loginCmd.Flags().StringVarP(&password, "password", "p", "", "Jira password")
-
+	loginCmd.Flags().StringP("server", "s", "", "Jira server url")
+	loginCmd.Flags().StringP("user", "u", "", "Jira username")
+	loginCmd.Flags().StringP("password", "p", "", "Jira password")
+	viper.BindPFlag("server_url", loginCmd.Flags().Lookup("server"))
+	viper.BindPFlag("user", loginCmd.Flags().Lookup("user"))
+	viper.BindPFlag("password", loginCmd.Flags().Lookup("password"))
 }
 
 func getInput(prompt string) string {
@@ -127,7 +129,7 @@ func login(server string, user string, password string) bool {
 
 	jiraUser := JiraUser{}
 	jsonErr := json.Unmarshal(body, &jiraUser)
-	if jsonErr != nil || jiraUser.Name != user {
+	if jsonErr != nil {
 		logger.ErrorF("%s\n", body)
 		logger.ErrorLn("Server responded invalid JSON")
 		os.Exit(1)
@@ -137,7 +139,8 @@ func login(server string, user string, password string) bool {
 }
 
 func saveConfig(server string, user string, password string) {
-	viper.Set("server", server)
-	viper.Set("auth", fmt.Sprintf("Basic %s", b64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", user, password)))))
+	viper.Set("server_url", server)
+	viper.Set("user", user)
+	viper.Set("password", password)
 	viper.WriteConfig()
 }

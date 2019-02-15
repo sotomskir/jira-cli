@@ -16,11 +16,13 @@ package jiraApi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/sotomskir/jira-cli/logger"
+	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
-	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -50,16 +52,15 @@ type Issue struct {
 	Fields Fields `json:"fields"`
 }
 
-func Initialize(serverUrl string, authHeader string) {
-	resty.SetHostURL(serverUrl)
+func Initialize() {
+	resty.SetHostURL(viper.GetString("server_url"))
 	resty.SetTimeout(1 * time.Minute)
-
+	resty.SetBasicAuth(viper.GetString("user"), viper.GetString("password"))
 	// Headers for all request
 	resty.SetHeader("Accept", "application/json")
 	resty.SetHeaders(map[string]string{
 		"Content-Type":  "application/json",
 		"User-Agent":    "jira-cli",
-		"Authorization": authHeader,
 	})
 }
 
@@ -71,7 +72,7 @@ func get(endpoint string, response interface{}) {
 	}
 
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("Status code: %d\nResponse: %s\n", res.StatusCode(), string(res.Body()))
+		logger.ErrorF("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
 		os.Exit(1)
 	}
 
@@ -90,7 +91,7 @@ func post(endpoint string, payload interface{}, response interface{}) {
 		os.Exit(1)
 	}
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("Status code: %d\nRequest: %#v\nResponse: %s\n", res.StatusCode(), payload, string(res.Body()))
+		logger.ErrorF("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 		os.Exit(1)
 	}
 
@@ -108,7 +109,7 @@ func put(endpoint string, payload interface{}, response interface{}) {
 		os.Exit(1)
 	}
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("Status code: %d\nRequest: %#v\nResponse: %s\n", res.StatusCode(), payload, string(res.Body()))
+		logger.ErrorF("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 		os.Exit(1)
 	}
 	if res.StatusCode() == 204 {
@@ -128,17 +129,16 @@ func GetVersions(projectKey string) []Version {
 	return versions
 }
 
-func find(vs []Version, name string) Version {
+func find(vs []Version, name string) (Version, error) {
 	for _, v := range vs {
 		if v.Name == name {
-			return v
+			return v, nil
 		}
 	}
-	log.Fatalf("Version %s not found\n", name)
-	return Version{}
+	return Version{}, errors.New("version not found")
 }
 
-func GetVersion(projectKey string, version string) Version {
+func GetVersion(projectKey string, version string) (Version, error) {
 	versions := GetVersions(projectKey)
 	return find(versions, version)
 }
@@ -159,7 +159,7 @@ func updateVersion(versionId string, payload Version) Version {
 }
 
 func ReleaseVersion(projectKey string, version string) {
-	versionFromServer := GetVersion(projectKey, version)
+	versionFromServer, _ := GetVersion(projectKey, version)
 	payload := Version{}
 	payload.Released = true
 	updateVersion(versionFromServer.Id, payload)
@@ -190,6 +190,11 @@ func SetFixVersion(issueKey string, version string) bool {
 	if len(response.Fields.FixVersions) > 0 {
 		logger.WarnF("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
 		return false
+	}
+	project := strings.Split(issueKey, "-")[0]
+	_, err := GetVersion(project, version)
+	if err != nil {
+		CreateVersion(project, version)
 	}
 	put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
 	return true
