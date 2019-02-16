@@ -15,6 +15,7 @@
 package jiraApi
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -227,8 +228,6 @@ func GetIssue(issueKey string) Issue {
 func TransitionIssue(workflowPath string, issueKey string, targetStatus string) {
 	readWorkflow(workflowPath)
 	lowerTargetStatus := strings.ToLower(targetStatus)
-	viper.SetConfigFile(workflowPath)
-	viper.MergeInConfig()
 	workflow := viper.GetStringMap("workflow")
 	if workflow == nil {
 		logger.ErrorLn("workflow not present in config file")
@@ -301,6 +300,11 @@ func TestTransitions(workflowPath string, issueKey string) {
 }
 
 func readWorkflow(workflowPath string) {
+	workflowContent := viper.GetString("WORKFLOW_CONTENT")
+	if workflowContent != "" {
+		viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))
+		return
+	}
 	if _, err := os.Stat(workflowPath); err != nil {
 		if os.IsNotExist(err) {
 			logger.ErrorF("File not found: %s\n", workflowPath)

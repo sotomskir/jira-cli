@@ -31,7 +31,7 @@ var issueTransitionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		issueKey := args[0]
 		targetState := args[1]
-		workflow, err := cmd.PersistentFlags().GetString("workflow")
+		workflow, err := cmd.Flags().GetString("workflow")
 		if err != nil {
 			logger.ErrorLn(err)
 			os.Exit(1)
@@ -50,7 +50,6 @@ func init() {
 	// and all subcommands, e.g.:
 	// issueTransitionCmd.PersistentFlags().String("foo", "", "A help for foo")
 	issueTransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
-
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// issueTransitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
