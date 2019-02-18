@@ -83,7 +83,6 @@ func initConfig() {
 		viper.SetConfigName(".jira-cli")
 	}
 
-	viper.SetEnvPrefix("JIRA")
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv() // read in environment variables that match
 
@@ -98,5 +97,5 @@ func initConfig() {
 		}
 		viper.WriteConfigAs(path.Join(home, "/.jira-cli.yaml"))
 	}
-	jiraApi.Initialize()
+	jiraApi.Initialize(viper.GetString("server_url"), viper.GetString("user"), viper.GetString("password"))
 }

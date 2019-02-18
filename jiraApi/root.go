@@ -70,10 +70,10 @@ type Transitions struct {
 	Transition  Transition   `json:"transition,omitempty"`
 }
 
-func Initialize() {
-	resty.SetHostURL(viper.GetString("server_url"))
+func Initialize(serverUrl string, username string, password string) {
+	resty.SetHostURL(serverUrl)
 	resty.SetTimeout(1 * time.Minute)
-	resty.SetBasicAuth(viper.GetString("user"), viper.GetString("password"))
+	resty.SetBasicAuth(username, password)
 	// Headers for all request
 	resty.SetHeader("Accept", "application/json")
 	resty.SetHeaders(map[string]string{
@@ -300,14 +300,14 @@ func TestTransitions(workflowPath string, issueKey string) {
 }
 
 func readWorkflow(workflowPath string) {
-	workflowContent := viper.GetString("WORKFLOW_CONTENT")
+	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
 	if workflowContent != "" {
 		viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))
 		return
 	}
 	if _, err := os.Stat(workflowPath); err != nil {
 		if os.IsNotExist(err) {
-			logger.ErrorF("File not found: %s\n", workflowPath)
+			logger.ErrorF("Workflow file not found: %s\n", workflowPath)
 			os.Exit(1)
 		}
 	}
