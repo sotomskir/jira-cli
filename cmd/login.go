@@ -37,15 +37,15 @@ var loginCmd = &cobra.Command{
 	Aliases: []string{"l"},
 	Short:   "Login to Atlassian Jira server",
 	Run: func(cmd *cobra.Command, args []string) {
-		server := viper.GetString("server_url")
+		server := viper.GetString("JIRA_SERVER_URL")
 		if server == "" {
 			server = getInput("JIRA server URL: ")
 		}
-		user := viper.GetString("user")
+		user := viper.GetString("JIRA_USER")
 		if user == "" {
 			user = getInput("Username: ")
 		}
-		password := viper.GetString("password")
+		password := viper.GetString("JIRA_PASSWORD")
 		if password == "" {
 			password = getPasswd()
 		}
@@ -53,7 +53,6 @@ var loginCmd = &cobra.Command{
 		loggedIn := login(server, user, password)
 
 		if loggedIn {
-			saveConfig(server, user, password)
 			logger.SuccessF("Success, Logged in to: %s as: %s\n", server, user)
 		}
 	},
@@ -73,9 +72,9 @@ func init() {
 	loginCmd.Flags().StringP("server", "s", "", "Jira server url. Also read from JIRA_SERVER_URL env variable")
 	loginCmd.Flags().StringP("user", "u", "", "Jira username. Also read from JIRA_USER env variable")
 	loginCmd.Flags().StringP("password", "p", "", "Jira password. Also read from JIRA_PASSWORD env variable")
-	viper.BindPFlag("server_url", loginCmd.Flags().Lookup("server"))
-	viper.BindPFlag("user", loginCmd.Flags().Lookup("user"))
-	viper.BindPFlag("password", loginCmd.Flags().Lookup("password"))
+	viper.BindPFlag("JIRA_SERVER_URL", loginCmd.Flags().Lookup("server"))
+	viper.BindPFlag("JIRA_USER", loginCmd.Flags().Lookup("user"))
+	viper.BindPFlag("JIRA_PASSWORD", loginCmd.Flags().Lookup("password"))
 }
 
 func getInput(prompt string) string {
@@ -136,11 +135,4 @@ func login(server string, user string, password string) bool {
 	}
 
 	return true
-}
-
-func saveConfig(server string, user string, password string) {
-	viper.Set("server_url", server)
-	viper.Set("user", user)
-	viper.Set("password", password)
-	viper.WriteConfig()
 }

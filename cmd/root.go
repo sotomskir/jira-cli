@@ -97,5 +97,5 @@ func initConfig() {
 		}
 		viper.WriteConfigAs(path.Join(home, "/.jira-cli.yaml"))
 	}
-	jiraApi.Initialize(viper.GetString("server_url"), viper.GetString("user"), viper.GetString("password"))
+	jiraApi.Initialize(viper.GetString("JIRA_SERVER_URL"), viper.GetString("JIRA_USER"), viper.GetString("JIRA_PASSWORD"))
 }

@@ -4,7 +4,8 @@ Atlassian's Jira REST API client written in Go for use with CI/CD tools to autom
 ## Install
 ### Linux
 ```bash
-sudo curl -L "https://github.com/sotomskir/jira-cli/releases/download/0.1.0/jira-cli-$(uname -s)-$(uname -m)" -o /usr/local/bin/jira-cli
+sudo curl -L "https://github.com/sotomskir/jira-cli/releases/download/0.3.0/jira-cli-$(uname -s)-$(uname -m)" -o /usr/local/bin/jira-cli
+sudo chmod +x /usr/local/bin/jira-cli
 ```
 ### Other platforms
 You can download pre-build binary here: https://github.com/sotomskir/jira-cli/releases
