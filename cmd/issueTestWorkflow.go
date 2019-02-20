@@ -16,8 +16,8 @@
 package cmd
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"github.com/sotomskir/jira-cli/logger"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -31,11 +31,11 @@ var testWorkflowCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		workflow, err := cmd.Flags().GetString("workflow")
 		if err != nil {
-			logger.ErrorLn(err)
+			logrus.Errorln(err)
 			os.Exit(1)
 		}
 		jiraApi.TestTransitions(workflow, args[0])
-		logger.SuccessLn("issueTransitionTest PASSED")
+		logrus.Infoln("issueTransitionTest PASSED")
 	},
 }
 

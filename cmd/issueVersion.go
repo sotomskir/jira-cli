@@ -16,8 +16,8 @@
 package cmd
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"github.com/sotomskir/jira-cli/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +35,7 @@ If version does not exist it will be created`,
 		version := args[1]
 		result := jiraApi.SetFixVersion(issueKey, version)
 		if result {
-			logger.SuccessF("Success version %s set for issue %s\n", version, issueKey)
+			logrus.Infof("Success version %s set for issue %s\n", version, issueKey)
 		}
 	},
 }

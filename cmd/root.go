@@ -15,10 +15,9 @@
 package cmd
 
 import (
-	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"github.com/sotomskir/jira-cli/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -36,12 +35,14 @@ var rootCmd = &cobra.Command{
 jira-cli is a CLI for Atlassian Jira REST API.
 It can be used with CI/CD pipelines to automate workflow.`,
 }
+var debug bool
+var trace bool
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.ErrorLn(err)
+		logrus.Errorln(err)
 		os.Exit(1)
 	}
 }
@@ -58,14 +59,25 @@ func init() {
 	// will be global for your application.
 	//rootCmd.PersistentFlags().StringVarP(&user, "user", "u", "admin", "Jira username")
 	//rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "admin", "Jira password")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug output")
+	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Trace output")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if noColor {
-		color.NoColor = true
+	logrus.SetFormatter(&logrus.TextFormatter{
+		DisableColors: noColor,
+		ForceColors: true,
+		DisableTimestamp: true,
+		DisableLevelTruncation: true,
+	})
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+	if trace {
+		logrus.SetLevel(logrus.TraceLevel)
 	}
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -74,7 +86,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			logger.ErrorLn(err)
+			logrus.Errorln(err)
 			os.Exit(1)
 		}
 
@@ -92,7 +104,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			logger.ErrorLn(err)
+			logrus.Errorln(err)
 			os.Exit(1)
 		}
 		viper.WriteConfigAs(path.Join(home, "/.jira-cli.yaml"))

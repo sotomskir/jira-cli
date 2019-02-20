@@ -16,8 +16,8 @@
 package cmd
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"github.com/sotomskir/jira-cli/logger"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -33,11 +33,11 @@ var issueTransitionCmd = &cobra.Command{
 		targetState := args[1]
 		workflow, err := cmd.Flags().GetString("workflow")
 		if err != nil {
-			logger.ErrorLn(err)
+			logrus.Errorln(err)
 			os.Exit(1)
 		}
 		jiraApi.TransitionIssue(workflow, issueKey, targetState)
-		logger.SuccessF("Success issue '%s' is in status '%s'\n", issueKey, targetState)
+		logrus.Infof("Success issue '%s' is in status '%s'\n", issueKey, targetState)
 	},
 }
 
