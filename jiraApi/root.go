@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/jira-cli/logger"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
@@ -86,19 +85,19 @@ func Initialize(serverUrl string, username string, password string) {
 func get(endpoint string, response interface{}) {
 	res, err := resty.R().Get(endpoint)
 	if err != nil {
-		logger.ErrorLn(err)
+		logrus.Errorln(err)
 		os.Exit(1)
 	}
 
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
+		logrus.Errorf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
 		os.Exit(1)
 	}
 
 	jsonErr := json.Unmarshal(res.Body(), response)
 
 	if jsonErr != nil {
-		logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
 		os.Exit(1)
 	}
 }
@@ -106,17 +105,17 @@ func get(endpoint string, response interface{}) {
 func post(endpoint string, payload interface{}, response interface{}) {
 	res, err := resty.R().SetBody(payload).Post(endpoint)
 	if err != nil {
-		logger.ErrorLn(err)
+		logrus.Errorln(err)
 		os.Exit(1)
 	}
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
+		logrus.Errorf("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 		os.Exit(1)
 	}
 	if res.StatusCode() != 204 {
 		jsonErr := json.Unmarshal(res.Body(), response)
 		if jsonErr != nil {
-			logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+			logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
 			os.Exit(1)
 		}
 	}
@@ -125,11 +124,11 @@ func post(endpoint string, payload interface{}, response interface{}) {
 func put(endpoint string, payload interface{}, response interface{}) {
 	res, err := resty.R().SetBody(payload).Put(endpoint)
 	if err != nil {
-		logger.ErrorLn(err)
+		logrus.Errorln(err)
 		os.Exit(1)
 	}
 	if res.StatusCode() >= 400 {
-		logger.ErrorF("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
+		logrus.Errorf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
 		os.Exit(1)
 	}
 	if res.StatusCode() == 204 {
@@ -137,7 +136,7 @@ func put(endpoint string, payload interface{}, response interface{}) {
 	}
 	jsonErr := json.Unmarshal(res.Body(), response)
 	if jsonErr != nil {
-		logger.ErrorF("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
 		os.Exit(1)
 	}
 }
@@ -208,7 +207,7 @@ func mapVersionName(versions []Version) []string {
 func SetFixVersion(issueKey string, version string) bool {
 	response := GetIssue(issueKey)
 	if len(response.Fields.FixVersions) > 0 {
-		logger.WarnF("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
+		logrus.Warnf("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
 		return false
 	}
 	project := strings.Split(issueKey, "-")[0]
@@ -231,15 +230,15 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 	lowerTargetStatus := strings.ToLower(targetStatus)
 	workflow := viper.GetStringMap("workflow")
 	if workflow == nil {
-		logger.ErrorLn("workflow not present in config file")
+		logrus.Errorln("workflow not present in config file")
 		os.Exit(1)
 	}
 	for i := 0; i < 20; i++ {
 		currentStatus := strings.ToLower(GetIssue(issueKey).Fields.Status.Name)
-		logger.InfoF("current status: '%s', target status: '%s'\n", currentStatus, lowerTargetStatus)
+		logrus.Infof("current status: '%s', target status: '%s'\n", currentStatus, lowerTargetStatus)
 		currentStatusTransitions := workflow[currentStatus]
 		if currentStatusTransitions == nil {
-			logger.ErrorF("workflow does not define transitions for status: %s\n", currentStatus)
+			logrus.Errorf("workflow does not define transitions for status: %s\n", currentStatus)
 			os.Exit(1)
 		}
 		if currentStatus == targetStatus {
@@ -248,7 +247,7 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 		transition := GetTransitionByName(issueKey, getByNameOrDefault(cast.ToStringMap(currentStatusTransitions), targetStatus))
 		payload := Transitions{}
 		payload.Transition = transition
-		logger.InfoF("executing transition: '%s'\n", transition.Name)
+		logrus.Infof("executing transition: '%s'\n", transition.Name)
 		post(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
 	}
 }
@@ -260,7 +259,7 @@ func getByNameOrDefault(transitions map[string]interface{}, name string) string 
 	if val, ok := cast.ToStringMap(transitions)["default"]; ok {
 		return cast.ToString(val)
 	}
-	logger.ErrorF("transition '%s' is not defined in workflow\n", name)
+	logrus.Errorf("transition '%s' is not defined in workflow\n", name)
 	os.Exit(1)
 	return ""
 }
@@ -272,7 +271,7 @@ func GetTransitionByName(issueKey string, transitionName string) Transition {
 			return t
 		}
 	}
-	logger.ErrorF("transition '%s' is not found in transitions of issue: %s\n", transitionName, issueKey)
+	logrus.Errorf("transition '%s' is not found in transitions of issue: %s\n", transitionName, issueKey)
 	os.Exit(1)
 	return Transition{}
 }
@@ -287,14 +286,14 @@ func TestTransitions(workflowPath string, issueKey string) {
 	readWorkflow(workflowPath)
 	workflow := viper.GetStringMap("workflow")
 	if workflow == nil {
-		logger.ErrorLn("workflow not present in config file")
+		logrus.Errorln("workflow not present in config file")
 		os.Exit(1)
 	}
 	for fromState := range workflow {
-		logger.InfoF("\tTesting transitions from state: '%s'\n", fromState)
+		logrus.Infof("\tTesting transitions from state: '%s'\n", fromState)
 		TransitionIssue(workflowPath, issueKey, fromState)
 		for toState := range workflow {
-			logger.InfoF("\tto state: '%s'\n", toState)
+			logrus.Infof("\tto state: '%s'\n", toState)
 			TransitionIssue(workflowPath, issueKey, toState)
 		}
 	}
@@ -307,7 +306,8 @@ func readWorkflow(workflowPath string) {
 		return
 	}
 	if strings.HasPrefix(workflowPath, "http://") || strings.HasPrefix(workflowPath, "https://") {
-		response, err := resty.R().Get(workflowPath)
+		response, err := resty.New().R().Get(workflowPath)
+		logrus.Debugln(response)
 		if err != nil {
 			logrus.Fatalln(response.Body(), err)
 		}
@@ -316,7 +316,7 @@ func readWorkflow(workflowPath string) {
 	}
 	if _, err := os.Stat(workflowPath); err != nil {
 		if os.IsNotExist(err) {
-			logger.ErrorF("Workflow file not found: %s\n", workflowPath)
+			logrus.Errorf("Workflow file not found: %s\n", workflowPath)
 			os.Exit(1)
 		}
 	}

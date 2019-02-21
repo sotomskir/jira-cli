@@ -16,9 +16,8 @@
 package cmd
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"github.com/sotomskir/jira-cli/logger"
-
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +31,7 @@ var versionCreateCmd = &cobra.Command{
 		projectKey := args[0]
 		version := args[1]
 		response := jiraApi.CreateVersion(projectKey, version)
-		logger.SuccessF("Success version created %#v\n", response)
+		logrus.Infof("Success version created %#v\n", response)
 	},
 }
 

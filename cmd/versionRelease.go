@@ -16,8 +16,8 @@
 package cmd
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"github.com/sotomskir/jira-cli/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +31,7 @@ var versionReleaseCmd = &cobra.Command{
 		projectKey := args[0]
 		version := args[1]
 		jiraApi.ReleaseVersion(projectKey, version)
-		logger.SuccessF("Success version %s from project %s released\n", version, projectKey)
+		logrus.Infof("Success version %s from project %s released\n", version, projectKey)
 	},
 }
 

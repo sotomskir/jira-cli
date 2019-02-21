@@ -19,7 +19,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/sotomskir/jira-cli/logger"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
@@ -53,7 +53,7 @@ var loginCmd = &cobra.Command{
 		loggedIn := login(server, user, password)
 
 		if loggedIn {
-			logger.SuccessF("Success, Logged in to: %s as: %s\n", server, user)
+			logrus.Infof("Success, Logged in to: %s as: %s\n", server, user)
 		}
 	},
 }
@@ -104,33 +104,33 @@ func login(server string, user string, password string) bool {
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		logger.ErrorLn(err)
+		logrus.Errorln(err)
 		os.Exit(1)
 	}
 
 	req.SetBasicAuth(user, password)
 	res, getErr := httpClient.Do(req)
 	if getErr != nil {
-		logger.ErrorLn(getErr)
+		logrus.Errorln(getErr)
 		os.Exit(1)
 	}
 
 	if res.StatusCode == 401 {
-		logger.ErrorLn("Server responded with status: 401 Unauthorized")
+		logrus.Errorln("Server responded with status: 401 Unauthorized")
 		os.Exit(1)
 	}
 
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
-		logger.ErrorLn("Cannot read response body: " + readErr.Error())
+		logrus.Errorln("Cannot read response body: " + readErr.Error())
 		os.Exit(1)
 	}
 
 	jiraUser := JiraUser{}
 	jsonErr := json.Unmarshal(body, &jiraUser)
 	if jsonErr != nil {
-		logger.ErrorF("%s\n", body)
-		logger.ErrorLn("Server responded invalid JSON")
+		logrus.Errorf("%s\n", body)
+		logrus.Errorln("Server responded invalid JSON")
 		os.Exit(1)
 	}
 
