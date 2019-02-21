@@ -49,7 +49,7 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// issueTransitionCmd.PersistentFlags().String("foo", "", "A help for foo")
-	issueTransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
+	issueTransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition local file or http URL")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// issueTransitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/logger"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
@@ -303,6 +304,14 @@ func readWorkflow(workflowPath string) {
 	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
 	if workflowContent != "" {
 		viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))
+		return
+	}
+	if strings.HasPrefix(workflowPath, "http://") || strings.HasPrefix(workflowPath, "https://") {
+		response, err := resty.R().Get(workflowPath)
+		if err != nil {
+			logrus.Fatalln(response.Body(), err)
+		}
+		viper.MergeConfig(bytes.NewBuffer(response.Body()))
 		return
 	}
 	if _, err := os.Stat(workflowPath); err != nil {
