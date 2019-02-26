@@ -70,6 +70,15 @@ type Transitions struct {
 	Transition  Transition   `json:"transition,omitempty"`
 }
 
+type AddWorklog struct {
+	Comment          string `json:"comment"`
+	TimeSpentSeconds uint64 `json:"timeSpentSeconds"`
+}
+
+type WorklogResp struct {
+	Id string `json:"id"`
+}
+
 func Initialize(serverUrl string, username string, password string) {
 	resty.SetHostURL(serverUrl)
 	resty.SetTimeout(1 * time.Minute)
@@ -223,6 +232,23 @@ func GetIssue(issueKey string) Issue {
 	issue := Issue{}
 	get(fmt.Sprintf("rest/api/2/issue/%s", issueKey), &issue)
 	return issue
+}
+
+func Worklog(key string, min uint64, com string) {
+	sec := min * 60
+	logrus.Infof("Attempting to add %d[sec] for issue %s.", sec, key)
+	payload := AddWorklog{}
+	payload.Comment = com
+	payload.TimeSpentSeconds = sec
+	wr := WorklogResp{}
+	post(fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr)
+
+	if len(wr.Id) > 0 {
+		logrus.Infof("Successfully added %d[sec] to issue %s.", sec, key)
+	} else {
+		logrus.Errorf("There was an error adding your time to issue %s.", sec, key)
+	}
+
 }
 
 func TransitionIssue(workflowPath string, issueKey string, targetStatus string) {

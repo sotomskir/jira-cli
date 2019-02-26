@@ -40,19 +40,24 @@ var loginCmd = &cobra.Command{
 		server := viper.GetString("JIRA_SERVER_URL")
 		if server == "" {
 			server = getInput("JIRA server URL: ")
+			viper.Set("JIRA_SERVER_URL",server)
 		}
 		user := viper.GetString("JIRA_USER")
 		if user == "" {
 			user = getInput("Username: ")
+			viper.Set("JIRA_USER",user)
 		}
 		password := viper.GetString("JIRA_PASSWORD")
 		if password == "" {
 			password = getPasswd()
+			//@FIXME password store in plain text
+			viper.Set("JIRA_PASSWORD",password)
 		}
 
 		loggedIn := login(server, user, password)
 
 		if loggedIn {
+			viper.WriteConfig()
 			logrus.Infof("Success, Logged in to: %s as: %s\n", server, user)
 		}
 	},
