@@ -157,6 +157,7 @@ EOM
 ```
 
 ## Commands
+* [jira-cli](docs/jira-cli.md)	 - CLI client for Atlassian Jira REST API.
 * [jira-cli completion](docs/jira-cli_completion.md)	 - Generates completion scripts
 * [jira-cli completion bash](docs/jira-cli_completion_bash.md)	 - Generates bash completion scripts
 * [jira-cli completion zsh](docs/jira-cli_completion_zsh.md)	 - Generates zsh completion scripts
