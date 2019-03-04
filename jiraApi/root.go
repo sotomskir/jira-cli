@@ -206,7 +206,7 @@ func Worklog(key string, min uint64, com string) {
 	if len(wr.Id) > 0 {
 		logrus.Infof("Successfully added %d[sec] to issue %s.", sec, key)
 	} else {
-		logrus.Errorf("There was an error adding your time to issue %s.", sec, key)
+		logrus.Errorf("There was an error adding your time to issue %s.", key)
 	}
 }
 

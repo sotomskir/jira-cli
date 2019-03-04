@@ -24,16 +24,17 @@ import (
 	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
 	"strconv"
+	"sync"
 )
 
 // worklogCmd represents the worklog command
 var worklogCmd = &cobra.Command{
-	Use:     "worklog TIME_IN_MINUTES ISSUE_KEY",
+	Use:     "worklog TIME_IN_MINUTES ISSUE_KEY [ISSUE_KEY...]",
 	Aliases: []string{"w"},
-	Args:    cobra.ExactArgs(2),
+	Args:    cobra.MinimumNArgs(2),
 	Short:   "Manage worklogs for given task",
 	Run: func(cmd *cobra.Command, args []string) {
-		key := args[1]
+		issueKeys := args[1:]
 		min, _ := strconv.ParseUint(args[0], 0, 64)
 		com, err := cmd.Flags().GetString("comment")
 		if err != nil || len(com) == 0 {
@@ -43,7 +44,16 @@ var worklogCmd = &cobra.Command{
 			Project url: [https://github.com/sotomskir/jira-cli]
 			`
 		}
-		jiraApi.Worklog(key, min, com)
+
+		var wg sync.WaitGroup
+		for _, issueKey := range issueKeys {
+			wg.Add(1)
+			go func(issueKey string, min uint64, com string) {
+				defer wg.Done()
+				jiraApi.Worklog(issueKey, min, com)
+			}(issueKey, min, com)
+		}
+		wg.Wait()
 	},
 }
 
