@@ -13,43 +13,52 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package issue
 
 import (
-	"github.com/olekukonko/tablewriter"
+	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
 	"os"
+	"sync"
 
 	"github.com/spf13/cobra"
 )
-
-// projectLsCmd represents the projectLs command
-var projectLsCmd = &cobra.Command{
-	Use:   "ls",
-	Short: "List all projects",
+// transitionCmd represents the issueTransition command
+var transitionCmd = &cobra.Command{
+	Use:   "transition STATE ISSUE_KEY [ISSUE_KEY...]",
+	Aliases: []string{"t"},
+	Short: "Transition issue status to given state",
+	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		projects := jiraApi.GetProjects()
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "KEY", "NAME"})
-		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		table.SetCenterSeparator("|")
-		for _, p := range projects {
-			table.Append([]string{p.Id, p.Key, p.Name})
+		targetState := args[0]
+		issueKeys := args[1:]
+		workflow, err := cmd.Flags().GetString("workflow")
+		if err != nil {
+			logrus.Errorln(err)
+			os.Exit(1)
 		}
-		table.Render() // Send output
+		var wg sync.WaitGroup
+		for _, issueKey := range issueKeys {
+			wg.Add(1)
+			go func(workflow string, issueKey string, targetState string) {
+				defer wg.Done()
+				jiraApi.TransitionIssue(workflow, issueKey, targetState)
+			}(workflow, issueKey, targetState)
+		}
+		wg.Wait()
 	},
 }
 
 func init() {
-	projectCmd.AddCommand(projectLsCmd)
+	Cmd.AddCommand(transitionCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// projectLsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
+	// transitionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	transitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition local file or http URL")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// projectLsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// transitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

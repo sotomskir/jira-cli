@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/jira-cli/jiraApi/models"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
@@ -27,57 +28,6 @@ import (
 	"strings"
 	"time"
 )
-
-type Version struct {
-	Id        string `json:"id,omitempty"`
-	Name      string `json:"name,omitempty"`
-	Archived  bool   `json:"archived,omitempty"`
-	Released  bool   `json:"released,omitempty"`
-	ProjectId int    `json:"projectId,omitempty"`
-	Project   string `json:"project,omitempty"`
-}
-
-type Project struct {
-	Id   string `json:"id"`
-	Key  string `json:"key"`
-	Name string `json:"name"`
-}
-
-type Fields struct {
-	FixVersions []Version `json:"fixVersions"`
-	Status      Status    `json:"status"`
-}
-
-type Issue struct {
-	Id      string `json:"id"`
-	Key     string `json:"key"`
-	Summary string `json:"summary"`
-	Fields  Fields `json:"fields"`
-}
-
-type Status struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type Transition struct {
-	Id   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-type Transitions struct {
-	Transitions []Transition `json:"transitions,omitempty"`
-	Transition  Transition   `json:"transition,omitempty"`
-}
-
-type AddWorklog struct {
-	Comment          string `json:"comment"`
-	TimeSpentSeconds uint64 `json:"timeSpentSeconds"`
-}
-
-type WorklogResp struct {
-	Id string `json:"id"`
-}
 
 func Initialize(serverUrl string, username string, password string) {
 	resty.SetHostURL(serverUrl)
@@ -91,121 +41,126 @@ func Initialize(serverUrl string, username string, password string) {
 	})
 }
 
-func get(endpoint string, response interface{}) {
+func get(endpoint string, response interface{}) (code int, error error) {
 	res, err := resty.R().Get(endpoint)
 	if err != nil {
 		logrus.Errorln(err)
-		os.Exit(1)
+		return 1, err
 	}
 
 	if res.StatusCode() >= 400 {
 		logrus.Errorf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
-		os.Exit(1)
+		return res.StatusCode(), errors.New(string(res.Body()))
 	}
 
 	jsonErr := json.Unmarshal(res.Body(), response)
 
 	if jsonErr != nil {
 		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		os.Exit(1)
+		return 1, errors.New("unmarshalling error")
 	}
+
+	return 0, nil
 }
 
-func post(endpoint string, payload interface{}, response interface{}) {
+func post(endpoint string, payload interface{}, response interface{}) (code int, error error) {
 	res, err := resty.R().SetBody(payload).Post(endpoint)
 	if err != nil {
 		logrus.Errorln(err)
-		os.Exit(1)
+		return 1, err
 	}
 	if res.StatusCode() >= 400 {
 		logrus.Errorf("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
-		os.Exit(1)
-	}
-	if res.StatusCode() != 204 {
-		jsonErr := json.Unmarshal(res.Body(), response)
-		if jsonErr != nil {
-			logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-			os.Exit(1)
-		}
-	}
-}
-
-func put(endpoint string, payload interface{}, response interface{}) {
-	res, err := resty.R().SetBody(payload).Put(endpoint)
-	if err != nil {
-		logrus.Errorln(err)
-		os.Exit(1)
-	}
-	if res.StatusCode() >= 400 {
-		logrus.Errorf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
-		os.Exit(1)
+		return res.StatusCode(), errors.New(string(res.Body()))
 	}
 	if res.StatusCode() == 204 {
-		return
+		return 204, nil
 	}
 	jsonErr := json.Unmarshal(res.Body(), response)
 	if jsonErr != nil {
 		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		os.Exit(1)
+		return 1, errors.New("unmarshalling error")
 	}
+	return 0, nil
 }
 
-func GetVersions(projectKey string) []Version {
+func put(endpoint string, payload interface{}, response interface{}) (code int, error error) {
+	res, err := resty.R().SetBody(payload).Put(endpoint)
+	if err != nil {
+		logrus.Errorln(err)
+		return 1, err
+	}
+	if res.StatusCode() >= 400 {
+		logrus.Errorf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
+		return res.StatusCode(), errors.New(string(res.Body()))
+	}
+	if res.StatusCode() == 204 {
+		return 204, nil
+	}
+	jsonErr := json.Unmarshal(res.Body(), response)
+	if jsonErr != nil {
+		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+		return 1, errors.New("unmarshalling error")
+	}
+	return 0, nil
+}
+
+func GetVersions(projectKey string) []models.Version {
 	// TODO paginacja
-	versions := make([]Version, 0)
+	versions := make([]models.Version, 0)
 	get(fmt.Sprintf("rest/api/2/project/%s/versions", projectKey), &versions)
 	return versions
 }
 
-func find(vs []Version, name string) (Version, error) {
+func find(vs []models.Version, name string) (models.Version, error) {
 	for _, v := range vs {
 		if v.Name == name {
 			return v, nil
 		}
 	}
-	return Version{}, errors.New("version not found")
+	return models.Version{}, errors.New("version not found")
 }
 
-func GetVersion(projectKey string, version string) (Version, error) {
+func GetVersion(projectKey string, version string) (models.Version, error) {
 	versions := GetVersions(projectKey)
 	return find(versions, version)
 }
 
-func CreateVersion(projectKey string, version string) Version {
-	payload := Version{}
+func CreateVersion(projectKey string, version string) models.Version {
+	payload := models.Version{}
 	payload.Name = version
 	payload.Project = projectKey
-	response := Version{}
+	response := models.Version{}
 	post("rest/api/2/version", payload, &response)
 	return response
 }
 
-func updateVersion(versionId string, payload Version) Version {
-	response := Version{}
+func updateVersion(versionId string, payload models.Version) models.Version {
+	response := models.Version{}
 	put(fmt.Sprintf("rest/api/2/version/%s", versionId), payload, &response)
 	return response
 }
 
 func ReleaseVersion(projectKey string, version string) {
 	versionFromServer, _ := GetVersion(projectKey, version)
-	payload := Version{}
+	payload := models.Version{}
 	payload.Released = true
 	updateVersion(versionFromServer.Id, payload)
 }
 
-func GetProject(projectKey string) Project {
-	project := Project{}
+func GetProject(projectKey string) models.Project {
+	project := models.Project{}
 	get(fmt.Sprintf("rest/api/2/project/%s", projectKey), &project)
 	return project
 }
 
-func GetProjects() []Project {
-	projects := make([]Project, 0)
+func GetProjects() []models.Project {
+	projects := make([]models.Project, 0)
 	get("rest/api/2/project", &projects)
 	return projects
 }
 
-func mapVersionName(versions []Version) []string {
+func mapVersionName(versions []models.Version) []string {
 	result := make([]string, 0)
 	for _, v := range versions {
 		result = append(result, v.Name)
@@ -213,34 +168,39 @@ func mapVersionName(versions []Version) []string {
 	return result
 }
 
-func SetFixVersion(issueKey string, version string) bool {
-	response := GetIssue(issueKey)
+func SetFixVersion(issueKey string, version string) (status int, error error) {
+	response, err := GetIssue(issueKey)
+	if err != nil {
+		return 1, err
+	}
 	if len(response.Fields.FixVersions) > 0 {
 		logrus.Warnf("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
-		return false
+		return 1, errors.New("fix version is already set")
 	}
 	project := strings.Split(issueKey, "-")[0]
-	_, err := GetVersion(project, version)
+	_, err = GetVersion(project, version)
 	if err != nil {
 		CreateVersion(project, version)
 	}
-	put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
-	return true
+	return put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
 }
 
-func GetIssue(issueKey string) Issue {
-	issue := Issue{}
-	get(fmt.Sprintf("rest/api/2/issue/%s", issueKey), &issue)
-	return issue
+func GetIssue(issueKey string) (i models.Issue, error error) {
+	issue := models.Issue{}
+	_, err := get(fmt.Sprintf("rest/api/2/issue/%s", issueKey), &issue)
+	if err != nil {
+		return issue, err
+	}
+	return issue, nil
 }
 
 func Worklog(key string, min uint64, com string) {
 	sec := min * 60
 	logrus.Infof("Attempting to add %d[sec] for issue %s.", sec, key)
-	payload := AddWorklog{}
+	payload := models.AddWorklog{}
 	payload.Comment = com
 	payload.TimeSpentSeconds = sec
-	wr := WorklogResp{}
+	wr := models.WorklogResp{}
 	post(fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr)
 
 	if len(wr.Id) > 0 {
@@ -248,34 +208,42 @@ func Worklog(key string, min uint64, com string) {
 	} else {
 		logrus.Errorf("There was an error adding your time to issue %s.", sec, key)
 	}
-
 }
 
-func TransitionIssue(workflowPath string, issueKey string, targetStatus string) {
+func TransitionIssue(workflowPath string, issueKey string, targetStatus string) (status int, error error) {
 	readWorkflow(workflowPath)
 	lowerTargetStatus := strings.ToLower(targetStatus)
 	workflow := viper.GetStringMap("workflow")
 	if workflow == nil {
 		logrus.Errorln("workflow not present in config file")
-		os.Exit(1)
+		return 1, errors.New("workflow not present in config file")
 	}
 	for i := 0; i < 20; i++ {
-		currentStatus := strings.ToLower(GetIssue(issueKey).Fields.Status.Name)
-		logrus.Infof("current status: '%s', target status: '%s'\n", currentStatus, lowerTargetStatus)
+		issue, err := GetIssue(issueKey)
+		if err != nil {
+			return 1, err
+		}
+		currentStatus := strings.ToLower(issue.Fields.Status.Name)
+		logrus.Infof("%s: current status: '%s', target status: '%s'\n", issueKey, currentStatus, lowerTargetStatus)
 		currentStatusTransitions := workflow[currentStatus]
 		if currentStatusTransitions == nil {
-			logrus.Errorf("workflow does not define transitions for status: %s\n", currentStatus)
-			os.Exit(1)
+			logrus.Errorf("%s: workflow does not define transitions for status: %s\n", issueKey, currentStatus)
+			return 1, errors.New("workflow error")
 		}
 		if currentStatus == targetStatus {
 			break
 		}
 		transition := GetTransitionByName(issueKey, getByNameOrDefault(cast.ToStringMap(currentStatusTransitions), targetStatus))
-		payload := Transitions{}
+		payload := models.Transitions{}
 		payload.Transition = transition
-		logrus.Infof("executing transition: '%s'\n", transition.Name)
-		post(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
+		logrus.Infof("%s: executing transition: '%s'\n", issueKey, transition.Name)
+		status, err := post(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
+		if err != nil {
+			logrus.Errorf("%s: executing transition: '%s'\n", issueKey, transition.Name)
+			return status, err
+		}
 	}
+	return 0, nil
 }
 
 func getByNameOrDefault(transitions map[string]interface{}, name string) string {
@@ -290,7 +258,7 @@ func getByNameOrDefault(transitions map[string]interface{}, name string) string 
 	return ""
 }
 
-func GetTransitionByName(issueKey string, transitionName string) Transition {
+func GetTransitionByName(issueKey string, transitionName string) models.Transition {
 	transitions := GetTransitions(issueKey)
 	for _, t := range transitions {
 		if strings.ToLower(t.Name) == transitionName {
@@ -299,11 +267,11 @@ func GetTransitionByName(issueKey string, transitionName string) Transition {
 	}
 	logrus.Errorf("transition '%s' is not found in transitions of issue: %s\n", transitionName, issueKey)
 	os.Exit(1)
-	return Transition{}
+	return models.Transition{}
 }
 
-func GetTransitions(issueKey string) []Transition {
-	transitions := Transitions{}
+func GetTransitions(issueKey string) []models.Transition {
+	transitions := models.Transitions{}
 	get(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), &transitions)
 	return transitions.Transitions
 }

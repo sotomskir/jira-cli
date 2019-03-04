@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package cmd
+package issue
 
 import (
 	"github.com/sotomskir/jira-cli/jiraApi"
@@ -27,14 +27,14 @@ import (
 )
 
 // worklogCmd represents the worklog command
-var issueWorklogCmd = &cobra.Command{
-	Use:     "worklog ISSUE_KEY TIME_IN_MINUTES",
+var worklogCmd = &cobra.Command{
+	Use:     "worklog TIME_IN_MINUTES ISSUE_KEY",
 	Aliases: []string{"w"},
 	Args:    cobra.ExactArgs(2),
 	Short:   "Manage worklogs for given task",
 	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
-		min, _ := strconv.ParseUint(args[1], 0, 64)
+		key := args[1]
+		min, _ := strconv.ParseUint(args[0], 0, 64)
 		com, err := cmd.Flags().GetString("comment")
 		if err != nil || len(com) == 0 {
 			com = `Automatically added by jira-cli. 
@@ -48,6 +48,6 @@ var issueWorklogCmd = &cobra.Command{
 }
 
 func init() {
-	issueCmd.AddCommand(issueWorklogCmd)
-	issueWorklogCmd.Flags().StringP("comment", "c", "", "Comment for worklog entry.")
+	Cmd.AddCommand(worklogCmd)
+	worklogCmd.Flags().StringP("comment", "c", "", "Comment for worklog entry.")
 }

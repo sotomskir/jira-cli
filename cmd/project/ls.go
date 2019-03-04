@@ -13,43 +13,43 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package project
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sotomskir/jira-cli/jiraApi"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
-// issueVersionCmd represents the issueVersion command
-var issueVersionCmd = &cobra.Command{
-	Use:   "version ISSUE_KEY VERSION",
-	Short: "Set issue fix version",
-	Long: `Set issue fix version. 
-If version is already set it will not be overwritten. 
-If version does not exist it will be created`,
-	Aliases: []string{"v"},
-	Args: cobra.ExactArgs(2),
+// projectLsCmd represents the projectLs command
+var projectLsCmd = &cobra.Command{
+	Use:   "ls",
+	Short: "List all projects",
 	Run: func(cmd *cobra.Command, args []string) {
-		issueKey := args[0]
-		version := args[1]
-		result := jiraApi.SetFixVersion(issueKey, version)
-		if result {
-			logrus.Infof("Success version %s set for issue %s\n", version, issueKey)
+		projects := jiraApi.GetProjects()
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "KEY", "NAME"})
+		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		table.SetCenterSeparator("|")
+		for _, p := range projects {
+			table.Append([]string{p.Id, p.Key, p.Name})
 		}
+		table.Render() // Send output
 	},
 }
 
 func init() {
-	issueCmd.AddCommand(issueVersionCmd)
+	Cmd.AddCommand(projectLsCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// issueVersionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// projectLsCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// issueVersionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// projectLsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

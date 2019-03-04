@@ -13,30 +13,27 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package project
 
 import (
 	"github.com/spf13/cobra"
-
 )
 
-// issueCmd represents the issue command
-var issueCmd = &cobra.Command{
-	Use:   "issue",
-	Aliases: []string{"i"},
-	Short: "Manage Jira issues",
+// Cmd represents the project command
+var Cmd = &cobra.Command{
+	Use:   "project",
+	Short: "Manage Jira projects",
+	Aliases: []string{"p"},
 }
 
 func init() {
-	rootCmd.AddCommand(issueCmd)
-
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// issueCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// Cmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// issueCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

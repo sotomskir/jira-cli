@@ -13,29 +13,38 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package version
 
 import (
+	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
 )
 
-// projectCmd represents the project command
-var projectCmd = &cobra.Command{
-	Use:   "project",
-	Short: "Manage Jira projects",
-	Aliases: []string{"p"},
+// versionReleaseCmd represents the versionRelease command
+var versionReleaseCmd = &cobra.Command{
+	Use:   "release VERSION PROJECT_KEY",
+	Aliases: []string{"r"},
+	Short: "Set version status to Released",
+	Args: cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		version := args[0]
+		projectKey := args[1]
+		jiraApi.ReleaseVersion(projectKey, version)
+		logrus.Infof("Success version %s from project %s released\n", version, projectKey)
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(projectCmd)
+	Cmd.AddCommand(versionReleaseCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// projectCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// versionReleaseCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// projectCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// versionReleaseCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

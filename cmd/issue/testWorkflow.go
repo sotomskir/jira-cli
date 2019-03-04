@@ -13,38 +13,42 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package issue
 
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
-// versionCreateCmd represents the versionCreate command
-var versionCreateCmd = &cobra.Command{
-	Use:   "create PROJECT_KEY VERSION",
-	Aliases: []string{"c"},
-	Short: "Create new version",
-	Args: cobra.ExactArgs(2),
+// testWorkflowCmd represents the issueTransitionTest command
+var testWorkflowCmd = &cobra.Command{
+	Use:   "test ISSUE_KEY",
+	Short: "Run through all transitions to test workflow definition yaml file",
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		projectKey := args[0]
-		version := args[1]
-		response := jiraApi.CreateVersion(projectKey, version)
-		logrus.Infof("Success version created %#v\n", response)
+		workflow, err := cmd.Flags().GetString("workflow")
+		if err != nil {
+			logrus.Errorln(err)
+			os.Exit(1)
+		}
+		jiraApi.TestTransitions(workflow, args[0])
+		logrus.Infoln("issueTransitionTest PASSED")
 	},
 }
 
 func init() {
-	versionCmd.AddCommand(versionCreateCmd)
+	Cmd.AddCommand(testWorkflowCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// versionCreateCmd.PersistentFlags().String("foo", "", "A help for foo")
+	//testWorkflowCmd.PersistentFlags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
+	testWorkflowCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// versionCreateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

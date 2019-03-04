@@ -16,35 +16,40 @@
 package cmd
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/sotomskir/jira-cli/jiraApi"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
-// versionReleaseCmd represents the versionRelease command
-var versionReleaseCmd = &cobra.Command{
-	Use:   "release PROJECT_KEY VERSION",
-	Aliases: []string{"r"},
-	Short: "Set version status to Released",
-	Args: cobra.ExactArgs(2),
+// completionBashCmd represents the completionBash command
+var bashCmd = &cobra.Command{
+	Use:   "bash",
+	Aliases: []string{"b"},
+	Short: "Generates bash completion scripts",
+	Long: `To load completion run
+
+. <(jira-cli completion bash)
+
+To configure your bash shell to load completions for each session add to your bashrc
+
+# ~/.bashrc or ~/.profile
+. <(jira-cli completion bash)
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		projectKey := args[0]
-		version := args[1]
-		jiraApi.ReleaseVersion(projectKey, version)
-		logrus.Infof("Success version %s from project %s released\n", version, projectKey)
+		rootCmd.GenBashCompletion(os.Stdout)
 	},
 }
 
 func init() {
-	versionCmd.AddCommand(versionReleaseCmd)
+	completionCmd.AddCommand(bashCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// versionReleaseCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// completionBashCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// versionReleaseCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// completionBashCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

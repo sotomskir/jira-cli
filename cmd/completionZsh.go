@@ -17,24 +17,38 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"os"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion",
-	Aliases: []string{"c"},
-	Short: "Generates completion scripts",
+// completionZshCmd represents the completionZsh command
+var zshCmd = &cobra.Command{
+	Use:   "zsh",
+	Aliases: []string{"z"},
+	Short: "Generates zsh completion scripts",
+	Long: `To load completion run
+
+. <(jira-cli completion zsh)
+
+To configure your bash shell to load completions for each session add to your bashrc
+
+# ~/.zshrc or ~/.profile
+. <(jira-cli completion zsh)
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		rootCmd.GenZshCompletion(os.Stdout)
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(completionCmd)
+	completionCmd.AddCommand(zshCmd)
+
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// completionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// completionZshCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// completionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// completionZshCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

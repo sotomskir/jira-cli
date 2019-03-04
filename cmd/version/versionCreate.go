@@ -13,28 +13,38 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package version
 
 import (
+	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion",
+// versionCreateCmd represents the versionCreate command
+var versionCreateCmd = &cobra.Command{
+	Use:   "create VERSION PROJECT_KEY",
 	Aliases: []string{"c"},
-	Short: "Generates completion scripts",
+	Short: "Create new version",
+	Args: cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		version := args[0]
+		projectKey := args[1]
+		response := jiraApi.CreateVersion(projectKey, version)
+		logrus.Infof("Success version created %#v\n", response)
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(completionCmd)
+	Cmd.AddCommand(versionCreateCmd)
+
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// completionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// versionCreateCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// completionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// versionCreateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

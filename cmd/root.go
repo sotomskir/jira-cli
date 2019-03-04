@@ -17,6 +17,9 @@ package cmd
 import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/jira-cli/cmd/issue"
+	"github.com/sotomskir/jira-cli/cmd/project"
+	"github.com/sotomskir/jira-cli/cmd/version"
 	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,6 +33,7 @@ var noColor bool
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "jira-cli",
+	Version: "0.7.0-SNAPSHOT",
 	Short: "CLI client for Atlassian Jira REST API.",
 	Long: `
 jira-cli is a CLI for Atlassian Jira REST API.
@@ -63,6 +67,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Trace output")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
+	rootCmd.AddCommand(issue.Cmd)
+	rootCmd.AddCommand(version.Cmd)
+	rootCmd.AddCommand(project.Cmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
