@@ -211,7 +211,7 @@ func Worklog(key string, min uint64, com string) {
 }
 
 func TransitionIssue(workflowPath string, issueKey string, targetStatus string) (status int, error error) {
-	readWorkflow(workflowPath)
+	ReadWorkflow(workflowPath)
 	lowerTargetStatus := strings.ToLower(targetStatus)
 	workflow := viper.GetStringMap("workflow")
 	if workflow == nil {
@@ -277,7 +277,7 @@ func GetTransitions(issueKey string) []models.Transition {
 }
 
 func TestTransitions(workflowPath string, issueKey string) {
-	readWorkflow(workflowPath)
+	ReadWorkflow(workflowPath)
 	workflow := viper.GetStringMap("workflow")
 	if workflow == nil {
 		logrus.Errorln("workflow not present in config file")
@@ -293,7 +293,7 @@ func TestTransitions(workflowPath string, issueKey string) {
 	}
 }
 
-func readWorkflow(workflowPath string) {
+func ReadWorkflow(workflowPath string) {
 	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
 	if workflowContent != "" {
 		viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))

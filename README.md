@@ -1,4 +1,10 @@
 # jira-cli
+[![Build Status](https://travis-ci.org/sotomskir/jira-cli.svg?branch=master)](https://travis-ci.org/sotomskir/jira-cli)
+[![codecov](https://codecov.io/gh/sotomskir/jira-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/sotomskir/jira-cli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sotomskir/jira-cli)](https://goreportcard.com/report/github.com/sotomskir/jira-cli)
+![GitHub release](https://img.shields.io/github/release-pre/sotomskir/jira-cli.svg)
+![GitHub](https://img.shields.io/github/license/sotomskir/jira-cli.svg)
+
 Atlassian's Jira REST API client written in Go for use with CI/CD tools to automate workflows.
 
 ## Install
