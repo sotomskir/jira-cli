@@ -23,10 +23,10 @@ import (
 
 // versionReleaseCmd represents the versionRelease command
 var versionReleaseCmd = &cobra.Command{
-	Use:   "release VERSION PROJECT_KEY",
+	Use:     "release VERSION PROJECT_KEY",
 	Aliases: []string{"r"},
-	Short: "Set version status to Released",
-	Args: cobra.ExactArgs(2),
+	Short:   "Set version status to Released",
+	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
 		projectKey := args[1]

@@ -17,14 +17,13 @@ package issue
 
 import (
 	"github.com/spf13/cobra"
-
 )
 
 // Cmd represents the issue command
 var Cmd = &cobra.Command{
-	Use:   "issue",
+	Use:     "issue",
 	Aliases: []string{"i"},
-	Short: "Manage Jira issues",
+	Short:   "Manage Jira issues",
 }
 
 func init() {

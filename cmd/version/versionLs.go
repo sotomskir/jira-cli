@@ -27,8 +27,8 @@ import (
 var versionLsCmd = &cobra.Command{
 	Use:   "ls PROJECY_KEY",
 	Short: "List versions for project",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string){
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
 		projectKey := args[0]
 		versions := jiraApi.GetVersions(projectKey)
 		table := tablewriter.NewWriter(os.Stdout)

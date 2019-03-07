@@ -23,12 +23,13 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
 // transitionCmd represents the issueTransition command
 var transitionCmd = &cobra.Command{
-	Use:   "transition STATE ISSUE_KEY [ISSUE_KEY...]",
+	Use:     "transition STATE ISSUE_KEY [ISSUE_KEY...]",
 	Aliases: []string{"t"},
-	Short: "Transition issue status to given state",
-	Args: cobra.MinimumNArgs(2),
+	Short:   "Transition issue status to given state",
+	Args:    cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		targetState := args[0]
 		issueKeys := args[1:]

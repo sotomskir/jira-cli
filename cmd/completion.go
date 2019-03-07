@@ -21,9 +21,9 @@ import (
 
 // completionCmd represents the completion command
 var completionCmd = &cobra.Command{
-	Use:   "completion",
+	Use:     "completion",
 	Aliases: []string{"c"},
-	Short: "Generates completion scripts",
+	Short:   "Generates completion scripts",
 }
 
 func init() {

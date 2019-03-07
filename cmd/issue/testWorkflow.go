@@ -27,7 +27,7 @@ import (
 var testWorkflowCmd = &cobra.Command{
 	Use:   "test ISSUE_KEY",
 	Short: "Run through all transitions to test workflow definition yaml file",
-	Args: cobra.ExactArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		workflow, err := cmd.Flags().GetString("workflow")
 		if err != nil {

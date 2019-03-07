@@ -23,9 +23,9 @@ import (
 
 // completionBashCmd represents the completionBash command
 var bashCmd = &cobra.Command{
-	Use:   "bash",
+	Use:     "bash",
 	Aliases: []string{"b"},
-	Short: "Generates bash completion scripts",
+	Short:   "Generates bash completion scripts",
 	Long: `To load completion run
 
 . <(jira-cli completion bash)

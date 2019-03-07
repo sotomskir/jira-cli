@@ -21,8 +21,8 @@ import (
 
 // Cmd represents the project command
 var Cmd = &cobra.Command{
-	Use:   "project",
-	Short: "Manage Jira projects",
+	Use:     "project",
+	Short:   "Manage Jira projects",
 	Aliases: []string{"p"},
 }
 

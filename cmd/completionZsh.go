@@ -22,9 +22,9 @@ import (
 
 // completionZshCmd represents the completionZsh command
 var zshCmd = &cobra.Command{
-	Use:   "zsh",
+	Use:     "zsh",
 	Aliases: []string{"z"},
-	Short: "Generates zsh completion scripts",
+	Short:   "Generates zsh completion scripts",
 	Long: `To load completion run
 
 . <(jira-cli completion zsh)

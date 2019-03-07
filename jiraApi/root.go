@@ -29,6 +29,7 @@ import (
 	"time"
 )
 
+// Initialize method is used to initialize API client
 func Initialize(serverUrl string, username string, password string) {
 	resty.SetHostURL(serverUrl)
 	resty.SetTimeout(1 * time.Minute)
@@ -105,6 +106,7 @@ func put(endpoint string, payload interface{}, response interface{}) (code int, 
 	return 0, nil
 }
 
+// GetVersions method returns JIRA versions of given project
 func GetVersions(projectKey string) []models.Version {
 	// TODO paginacja
 	versions := make([]models.Version, 0)
@@ -121,11 +123,13 @@ func find(vs []models.Version, name string) (models.Version, error) {
 	return models.Version{}, errors.New("version not found")
 }
 
+// GetVersion method returns JIRA version details
 func GetVersion(projectKey string, version string) (models.Version, error) {
 	versions := GetVersions(projectKey)
 	return find(versions, version)
 }
 
+// CreateVersion creates new version in specified project
 func CreateVersion(projectKey string, version string) models.Version {
 	payload := models.Version{}
 	payload.Name = version
@@ -141,6 +145,7 @@ func updateVersion(versionId string, payload models.Version) models.Version {
 	return response
 }
 
+// ReleaseVersion method changes project status to "released"
 func ReleaseVersion(projectKey string, version string) {
 	versionFromServer, _ := GetVersion(projectKey, version)
 	payload := models.Version{}
@@ -148,12 +153,14 @@ func ReleaseVersion(projectKey string, version string) {
 	updateVersion(versionFromServer.Id, payload)
 }
 
+// GetProject method returns project details
 func GetProject(projectKey string) models.Project {
 	project := models.Project{}
 	get(fmt.Sprintf("rest/api/2/project/%s", projectKey), &project)
 	return project
 }
 
+// GetProjects method list all projects
 func GetProjects() []models.Project {
 	projects := make([]models.Project, 0)
 	get("rest/api/2/project", &projects)
@@ -168,6 +175,7 @@ func mapVersionName(versions []models.Version) []string {
 	return result
 }
 
+// SetFixVersion method sets fix version of issue. When version is already set it won't be modified
 func SetFixVersion(issueKey string, version string) (status int, error error) {
 	response, err := GetIssue(issueKey)
 	if err != nil {
@@ -185,6 +193,7 @@ func SetFixVersion(issueKey string, version string) (status int, error error) {
 	return put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
 }
 
+// GetIssue method returns issue details
 func GetIssue(issueKey string) (i models.Issue, error error) {
 	issue := models.Issue{}
 	_, err := get(fmt.Sprintf("rest/api/2/issue/%s", issueKey), &issue)
@@ -194,6 +203,7 @@ func GetIssue(issueKey string) (i models.Issue, error error) {
 	return issue, nil
 }
 
+// Worklog method add worklog to issue
 func Worklog(key string, min uint64, com string) {
 	sec := min * 60
 	logrus.Infof("Attempting to add %d[sec] for issue %s.", sec, key)
@@ -210,6 +220,7 @@ func Worklog(key string, min uint64, com string) {
 	}
 }
 
+// TransitionIssue method executes issue transition
 func TransitionIssue(workflowPath string, issueKey string, targetStatus string) (status int, error error) {
 	ReadWorkflow(workflowPath)
 	lowerTargetStatus := strings.ToLower(targetStatus)
@@ -258,6 +269,7 @@ func getByNameOrDefault(transitions map[string]interface{}, name string) string 
 	return ""
 }
 
+// GetTransitionByName method returns transition details from issue
 func GetTransitionByName(issueKey string, transitionName string) models.Transition {
 	transitions := GetTransitions(issueKey)
 	for _, t := range transitions {
@@ -270,12 +282,14 @@ func GetTransitionByName(issueKey string, transitionName string) models.Transiti
 	return models.Transition{}
 }
 
+// GetTransitions method returns available transitions for issue
 func GetTransitions(issueKey string) []models.Transition {
 	transitions := models.Transitions{}
 	get(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), &transitions)
 	return transitions.Transitions
 }
 
+// TestTransitions method returns available transitions for issue
 func TestTransitions(workflowPath string, issueKey string) {
 	ReadWorkflow(workflowPath)
 	workflow := viper.GetStringMap("workflow")
@@ -293,6 +307,7 @@ func TestTransitions(workflowPath string, issueKey string) {
 	}
 }
 
+// ReadWorkflow method loads workflow definition from env var, http url or file
 func ReadWorkflow(workflowPath string) {
 	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
 	if workflowContent != "" {

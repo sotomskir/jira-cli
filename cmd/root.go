@@ -32,9 +32,9 @@ var noColor bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "jira-cli",
+	Use:     "jira-cli",
 	Version: "0.7.0-SNAPSHOT",
-	Short: "CLI client for Atlassian Jira REST API.",
+	Short:   "CLI client for Atlassian Jira REST API.",
 	Long: `
 jira-cli is a CLI for Atlassian Jira REST API.
 It can be used with CI/CD pipelines to automate workflow.`,
@@ -75,9 +75,9 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	logrus.SetFormatter(&logrus.TextFormatter{
-		DisableColors: noColor,
-		ForceColors: true,
-		DisableTimestamp: true,
+		DisableColors:          noColor,
+		ForceColors:            true,
+		DisableTimestamp:       true,
 		DisableLevelTruncation: true,
 	})
 	if debug {

@@ -23,10 +23,10 @@ import (
 
 // versionCreateCmd represents the versionCreate command
 var versionCreateCmd = &cobra.Command{
-	Use:   "create VERSION PROJECT_KEY",
+	Use:     "create VERSION PROJECT_KEY",
 	Aliases: []string{"c"},
-	Short: "Create new version",
-	Args: cobra.ExactArgs(2),
+	Short:   "Create new version",
+	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
 		projectKey := args[1]

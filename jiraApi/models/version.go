@@ -1,5 +1,6 @@
 package models
 
+// Version type represents JIRA project version resource
 type Version struct {
 	Id        string `json:"id,omitempty"`
 	Name      string `json:"name,omitempty"`
