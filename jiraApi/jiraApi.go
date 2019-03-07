@@ -108,7 +108,6 @@ func put(endpoint string, payload interface{}, response interface{}) (code int, 
 
 // GetVersions method returns JIRA versions of given project
 func GetVersions(projectKey string) []models.Version {
-	// TODO paginacja
 	versions := make([]models.Version, 0)
 	get(fmt.Sprintf("rest/api/2/project/%s/versions", projectKey), &versions)
 	return versions
@@ -289,7 +288,7 @@ func GetTransitions(issueKey string) []models.Transition {
 	return transitions.Transitions
 }
 
-// TestTransitions method returns available transitions for issue
+// TestTransitions method run through all transitions to test workflow definition
 func TestTransitions(workflowPath string, issueKey string) {
 	ReadWorkflow(workflowPath)
 	workflow := viper.GetStringMap("workflow")

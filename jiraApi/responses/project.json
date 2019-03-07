@@ -1,0 +1,30 @@
+[
+  {
+    "expand": "description,lead,url,projectKeys",
+    "self": "http://jira:8080/rest/api/2/project/10001",
+    "id": "10001",
+    "key": "TEST2",
+    "name": "Test2",
+    "avatarUrls": {
+      "48x48": "http://jira:8080/secure/projectavatar?avatarId=10324",
+      "24x24": "http://jira:8080/secure/projectavatar?size=small&avatarId=10324",
+      "16x16": "http://jira:8080/secure/projectavatar?size=xsmall&avatarId=10324",
+      "32x32": "http://jira:8080/secure/projectavatar?size=medium&avatarId=10324"
+    },
+    "projectTypeKey": "business"
+  },
+  {
+    "expand": "description,lead,url,projectKeys",
+    "self": "http://jira:8080/rest/api/2/project/10000",
+    "id": "10000",
+    "key": "TEST",
+    "name": "TEST",
+    "avatarUrls": {
+      "48x48": "http://jira:8080/secure/projectavatar?avatarId=10324",
+      "24x24": "http://jira:8080/secure/projectavatar?size=small&avatarId=10324",
+      "16x16": "http://jira:8080/secure/projectavatar?size=xsmall&avatarId=10324",
+      "32x32": "http://jira:8080/secure/projectavatar?size=medium&avatarId=10324"
+    },
+    "projectTypeKey": "business"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "self": "http://jira:8080/rest/api/2/version/10001",
+  "id": "10001",
+  "name": "2.0.0",
+  "archived": false,
+  "released": true,
+  "projectId": 10001
+}

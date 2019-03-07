@@ -1,0 +1,34 @@
+[
+  {
+    "self": "http://jira:8080/rest/api/2/version/10001",
+    "id": "10001",
+    "name": "2.0.0",
+    "archived": false,
+    "released": true,
+    "projectId": 10001
+  },
+  {
+    "self": "http://jira:8080/rest/api/2/version/10002",
+    "id": "10002",
+    "name": "1.0.1",
+    "archived": false,
+    "released": false,
+    "projectId": 10001
+  },
+  {
+    "self": "http://jira:8080/rest/api/2/version/10003",
+    "id": "10003",
+    "name": "1.2.0",
+    "archived": false,
+    "released": false,
+    "projectId": 10001
+  },
+  {
+    "self": "http://jira:8080/rest/api/2/version/10004",
+    "id": "10004",
+    "name": "1.3.0",
+    "archived": false,
+    "released": false,
+    "projectId": 10001
+  }
+]

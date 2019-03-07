@@ -1,0 +1,148 @@
+{
+  "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+  "id": "10000",
+  "self": "http://jira:8080/rest/api/2/issue/10000",
+  "key": "TEST-1",
+  "fields": {
+    "issuetype": {
+      "self": "http://jira:8080/rest/api/2/issuetype/10001",
+      "id": "10001",
+      "description": "A task that needs to be done.",
+      "iconUrl": "http://jira:8080/secure/viewavatar?size=xsmall&avatarId=10318&avatarType=issuetype",
+      "name": "Task",
+      "subtask": false,
+      "avatarId": 10318
+    },
+    "components": [],
+    "timespent": null,
+    "timeoriginalestimate": null,
+    "description": null,
+    "project": {
+      "self": "http://jira:8080/rest/api/2/project/10001",
+      "id": "10001",
+      "key": "TEST",
+      "name": "TEST",
+      "avatarUrls": {
+        "48x48": "http://jira:8080/secure/projectavatar?avatarId=10324",
+        "24x24": "http://jira:8080/secure/projectavatar?size=small&avatarId=10324",
+        "16x16": "http://jira:8080/secure/projectavatar?size=xsmall&avatarId=10324",
+        "32x32": "http://jira:8080/secure/projectavatar?size=medium&avatarId=10324"
+      }
+    },
+    "fixVersions": [],
+    "aggregatetimespent": null,
+    "resolution": null,
+    "timetracking": {},
+    "attachment": [],
+    "aggregatetimeestimate": null,
+    "resolutiondate": null,
+    "workratio": -1,
+    "summary": "ax",
+    "lastViewed": "2019-02-19T22:43:35.991+0000",
+    "watches": {
+      "self": "http://jira:8080/rest/api/2/issue/TEST-1/watchers",
+      "watchCount": 2,
+      "isWatching": true
+    },
+    "creator": {
+      "self": "http://jira:8080/rest/api/2/user?username=sotomski",
+      "name": "sotomski",
+      "key": "sotomski",
+      "emailAddress": "sotomski@gmail.com",
+      "avatarUrls": {
+        "48x48": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=48",
+        "24x24": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=24",
+        "16x16": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=16",
+        "32x32": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=32"
+      },
+      "displayName": "sotomski@gmail.com",
+      "active": true,
+      "timeZone": "GMT"
+    },
+    "subtasks": [],
+    "created": "2019-02-07T20:05:57.974+0000",
+    "reporter": {
+      "self": "http://jira:8080/rest/api/2/user?username=sotomski",
+      "name": "sotomski",
+      "key": "sotomski",
+      "emailAddress": "sotomski@gmail.com",
+      "avatarUrls": {
+        "48x48": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=48",
+        "24x24": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=24",
+        "16x16": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=16",
+        "32x32": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=32"
+      },
+      "displayName": "sotomski@gmail.com",
+      "active": true,
+      "timeZone": "GMT"
+    },
+    "aggregateprogress": {
+      "progress": 0,
+      "total": 0
+    },
+    "priority": {
+      "self": "http://jira:8080/rest/api/2/priority/3",
+      "iconUrl": "http://jira:8080/images/icons/priorities/medium.svg",
+      "name": "Medium",
+      "id": "3"
+    },
+    "labels": [],
+    "environment": null,
+    "timeestimate": null,
+    "aggregatetimeoriginalestimate": null,
+    "versions": [],
+    "duedate": null,
+    "progress": {
+      "progress": 0,
+      "total": 0
+    },
+    "comment": {
+      "comments": [],
+      "maxResults": 2,
+      "total": 2,
+      "startAt": 0
+    },
+    "issuelinks": [],
+    "votes": {
+      "self": "http://jira:8080/rest/api/2/issue/TEST-1/votes",
+      "votes": 0,
+      "hasVoted": false
+    },
+    "worklog": {
+      "startAt": 0,
+      "maxResults": 20,
+      "total": 0,
+      "worklogs": []
+    },
+    "assignee": {
+      "self": "http://jira:8080/rest/api/2/user?username=sotomski",
+      "name": "sotomski",
+      "key": "sotomski",
+      "emailAddress": "sotomski@gmail.com",
+      "avatarUrls": {
+        "48x48": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=48",
+        "24x24": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=24",
+        "16x16": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=16",
+        "32x32": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=32"
+      },
+      "displayName": "sotomski@gmail.com",
+      "active": true,
+      "timeZone": "GMT"
+    },
+    "updated": "2019-03-07T21:19:56.065+0000",
+    "status": {
+      "self": "http://jira:8080/rest/api/2/status/10002",
+      "description": "",
+      "iconUrl": "http://jira:8080/images/icons/statuses/generic.png",
+      "name": "Code Review",
+      "id": "10002",
+      "statusCategory": {
+        "self": "http://jira:8080/rest/api/2/statuscategory/2",
+        "id": 2,
+        "key": "new",
+        "colorName": "blue-gray",
+        "name": "To Do"
+      }
+    }
+  }
+}

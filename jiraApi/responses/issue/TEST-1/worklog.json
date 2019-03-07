@@ -1,0 +1,41 @@
+{
+  "self": "http://jira:8080/rest/api/2/issue/10000/worklog/10000",
+  "author": {
+    "self": "http://jira:8080/rest/api/2/user?username=sotomski",
+    "name": "sotomski",
+    "key": "sotomski",
+    "emailAddress": "sotomski@gmail.com",
+    "avatarUrls": {
+      "48x48": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=48",
+      "24x24": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=24",
+      "16x16": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=16",
+      "32x32": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=32"
+    },
+    "displayName": "sotomski@gmail.com",
+    "active": true,
+    "timeZone": "GMT"
+  },
+  "updateAuthor": {
+    "self": "http://jira:8080/rest/api/2/user?username=sotomski",
+    "name": "sotomski",
+    "key": "sotomski",
+    "emailAddress": "sotomski@gmail.com",
+    "avatarUrls": {
+      "48x48": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=48",
+      "24x24": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=24",
+      "16x16": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=16",
+      "32x32": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=32"
+    },
+    "displayName": "sotomski@gmail.com",
+    "active": true,
+    "timeZone": "GMT"
+  },
+  "comment": "comment",
+  "created": "2019-03-07T21:28:34.976+0000",
+  "updated": "2019-03-07T21:28:34.976+0000",
+  "started": "2019-03-07T21:28:34.962+0000",
+  "timeSpent": "10m",
+  "timeSpentSeconds": 600,
+  "id": "10000",
+  "issueId": "10000"
+}

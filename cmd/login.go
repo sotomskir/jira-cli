@@ -96,6 +96,7 @@ func getPasswd() string {
 	return string(bytePassword)
 }
 
+// JiraUser type represents response from session resource
 type JiraUser struct {
 	Name string `json:"name"`
 }

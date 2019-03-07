@@ -1,0 +1,95 @@
+{
+  "expand": "description,lead,url,projectKeys",
+  "self": "http://jira:8080/rest/api/2/project/10001",
+  "id": "10001",
+  "key": "TEST2",
+  "description": "",
+  "lead": {
+    "self": "http://jira:8080/rest/api/2/user?username=sotomski",
+    "key": "sotomski",
+    "name": "sotomski",
+    "avatarUrls": {
+      "48x48": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=48",
+      "24x24": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=24",
+      "16x16": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=16",
+      "32x32": "https://www.gravatar.com/avatar/b78e10799f5a5371cfa0ff63074e6513?d=mm&s=32"
+    },
+    "displayName": "sotomski@gmail.com",
+    "active": true
+  },
+  "components": [],
+  "issueTypes": [
+    {
+      "self": "http://jira:8080/rest/api/2/issuetype/10001",
+      "id": "10001",
+      "description": "A task that needs to be done.",
+      "iconUrl": "http://jira:8080/secure/viewavatar?size=xsmall&avatarId=10318&avatarType=issuetype",
+      "name": "Task",
+      "subtask": false,
+      "avatarId": 10318
+    },
+    {
+      "self": "http://jira:8080/rest/api/2/issuetype/10000",
+      "id": "10000",
+      "description": "The sub-task of the issue",
+      "iconUrl": "http://jira:8080/images/icons/issuetypes/subtask_alternate.png",
+      "name": "Sub-task",
+      "subtask": true
+    }
+  ],
+  "assigneeType": "UNASSIGNED",
+  "versions": [
+    {
+      "self": "http://jira:8080/rest/api/2/version/10001",
+      "id": "10001",
+      "name": "2.0.0",
+      "archived": false,
+      "released": true,
+      "projectId": 10001
+    },
+    {
+      "self": "http://jira:8080/rest/api/2/version/10002",
+      "id": "10002",
+      "name": "1.0.1",
+      "archived": false,
+      "released": false,
+      "projectId": 10001
+    },
+    {
+      "self": "http://jira:8080/rest/api/2/version/10003",
+      "id": "10003",
+      "name": "1.2.0",
+      "archived": false,
+      "released": false,
+      "projectId": 10001
+    },
+    {
+      "self": "http://jira:8080/rest/api/2/version/10004",
+      "id": "10004",
+      "name": "1.3.0",
+      "archived": false,
+      "released": false,
+      "projectId": 10001
+    },
+    {
+      "self": "http://jira:8080/rest/api/2/version/10005",
+      "id": "10005",
+      "name": "1.4.0",
+      "archived": false,
+      "released": false,
+      "projectId": 10001
+    }
+  ],
+  "name": "Test2",
+  "roles": {
+    "Administrators": "http://jira:8080/rest/api/2/project/10001/role/10002"
+  },
+  "avatarUrls": {
+    "48x48": "http://jira:8080/secure/projectavatar?avatarId=10324",
+    "24x24": "http://jira:8080/secure/projectavatar?size=small&avatarId=10324",
+    "16x16": "http://jira:8080/secure/projectavatar?size=xsmall&avatarId=10324",
+    "32x32": "http://jira:8080/secure/projectavatar?size=medium&avatarId=10324"
+  },
+  "projectTypeKey": "business",
+  "archived": false
+}
