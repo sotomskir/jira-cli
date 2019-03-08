@@ -2,7 +2,7 @@
   "expand": "description,lead,url,projectKeys",
   "self": "http://jira:8080/rest/api/2/project/10001",
   "id": "10001",
-  "key": "TEST2",
+  "key": "TEST",
   "description": "",
   "lead": {
     "self": "http://jira:8080/rest/api/2/user?username=sotomski",
