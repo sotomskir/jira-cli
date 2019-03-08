@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package issue
+package transition
 
 import (
 	"github.com/sirupsen/logrus"
@@ -24,8 +24,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// transitionCmd represents the issueTransition command
-var transitionCmd = &cobra.Command{
+// TransitionCmd represents the issueTransition command
+var TransitionCmd = &cobra.Command{
 	Use:     "transition STATE ISSUE_KEY [ISSUE_KEY...]",
 	Aliases: []string{"t"},
 	Short:   "Transition issue status to given state",
@@ -51,15 +51,6 @@ var transitionCmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.AddCommand(transitionCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// transitionCmd.PersistentFlags().String("foo", "", "A help for foo")
-	transitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition local file or http URL")
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// transitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	TransitionCmd.AddCommand(testWorkflowCmd)
+	TransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition local file or http URL")
 }

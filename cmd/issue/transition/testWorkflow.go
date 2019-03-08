@@ -13,25 +13,32 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package issue
+package transition
 
 import (
-	"github.com/sotomskir/jira-cli/cmd/issue/transition"
-	"github.com/sotomskir/jira-cli/cmd/issue/version"
-	"github.com/sotomskir/jira-cli/cmd/issue/worklog"
+	"github.com/sirupsen/logrus"
+	"github.com/sotomskir/jira-cli/jiraApi"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
-// Cmd represents the issue command
-var Cmd = &cobra.Command{
-	Use:     "issue",
-	Aliases: []string{"i"},
-	Short:   "Manage Jira issues",
+// testWorkflowCmd represents the issueTransitionTest command
+var testWorkflowCmd = &cobra.Command{
+	Use:   "test ISSUE_KEY",
+	Short: "Run through all transitions to test workflow definition yaml file",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		workflow, err := cmd.Flags().GetString("workflow")
+		if err != nil {
+			logrus.Errorln(err)
+			os.Exit(1)
+		}
+		jiraApi.TestTransitions(workflow, args[0])
+		logrus.Infoln("issueTransitionTest PASSED")
+	},
 }
 
 func init() {
-	Cmd.AddCommand(inspectCmd)
-	Cmd.AddCommand(worklog.Cmd)
-	Cmd.AddCommand(version.VersionCmd)
-	Cmd.AddCommand(transition.TransitionCmd)
+	testWorkflowCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
 }

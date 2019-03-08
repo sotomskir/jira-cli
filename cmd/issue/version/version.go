@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package issue
+package version
 
 import (
 	"github.com/sirupsen/logrus"
@@ -22,8 +22,8 @@ import (
 	"sync"
 )
 
-// versionCmd represents the issueVersion command
-var versionCmd = &cobra.Command{
+// VersionCmd represents the issueVersion command
+var VersionCmd = &cobra.Command{
 	Use:   "version VERSION ISSUE_KEY [ISSUE_KEY...]",
 	Short: "Set issue fix version",
 	Long: `Set issue fix version. 
@@ -51,15 +51,4 @@ If version does not exist it will be created`,
 }
 
 func init() {
-	Cmd.AddCommand(versionCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// versionCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// versionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

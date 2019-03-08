@@ -5,7 +5,7 @@
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// furnished to dlogrus.Infof(o so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
@@ -18,46 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package issue
+package worklog
 
 import (
-	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
-	"strconv"
-	"sync"
 )
 
-// worklogCmd represents the worklog command
-var worklogCmd = &cobra.Command{
-	Use:     "worklog TIME_IN_MINUTES ISSUE_KEY [ISSUE_KEY...]",
+//Cmd workload add command
+var Cmd = &cobra.Command{
+	Use:     "worklog",
 	Aliases: []string{"w"},
-	Args:    cobra.MinimumNArgs(2),
-	Short:   "Manage worklogs for given task",
-	Run: func(cmd *cobra.Command, args []string) {
-		issueKeys := args[1:]
-		min, _ := strconv.ParseUint(args[0], 0, 64)
-		com, err := cmd.Flags().GetString("comment")
-		if err != nil || len(com) == 0 {
-			com = `Automatically added by jira-cli. 
-			We'd love to accept your patches!
-			Come to the Dark Side - we have cookies. 
-			Project url: [https://github.com/sotomskir/jira-cli]
-			`
-		}
-
-		var wg sync.WaitGroup
-		for _, issueKey := range issueKeys {
-			wg.Add(1)
-			go func(issueKey string, min uint64, com string) {
-				defer wg.Done()
-				jiraApi.Worklog(issueKey, min, com)
-			}(issueKey, min, com)
-		}
-		wg.Wait()
-	},
+	Short:   "Manage worklogs for given tasks",
 }
 
 func init() {
-	Cmd.AddCommand(worklogCmd)
-	worklogCmd.Flags().StringP("comment", "c", "", "Comment for worklog entry.")
+	Cmd.AddCommand(worklogCreateCmd)
+	Cmd.AddCommand(worklogListCmd)
+	Cmd.AddCommand(worklogDeleteCmd)
 }

@@ -368,7 +368,7 @@ func TestWorklog(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
 		httpmock.NewStringResponder(200, response))
 
-	Worklog("TEST-1", 60, "comment")
+	AddWorklog("TEST-1", 60, "comment")
 
 	httpmock.GetTotalCallCount()
 	info := httpmock.GetCallCountInfo()
@@ -385,13 +385,62 @@ func TestWorklogError(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
 		httpmock.NewErrorResponder(errors.New("ERROR")))
 
-	Worklog("TEST-1", 60, "comment")
+	AddWorklog("TEST-1", 60, "comment")
 
 	httpmock.GetTotalCallCount()
 	info := httpmock.GetCallCountInfo()
 	count := info["POST https://jira.example.com/rest/api/2/issue/TEST-1/worklog"]
 	if count != 1 {
 		t.Errorf("TestWorklog: expected api calls: 1, got: %d", count)
+	}
+}
+
+func TestDeleteWorklogForUser(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	//given
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "jenkins_jira", "pass")
+	//-------------------------
+	//when - cant list worklogs
+	//-------------------------
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
+		httpmock.NewStringResponder(404, ""))
+
+	sumOk, sumError, err := DeleteWorklogForUser("jenkins_jira", "TEST-1")
+	//-------------------------
+	//then - assert 404 error
+	//-------------------------
+	expectedError := "http error: 404"
+	if err.Error() != expectedError {
+		t.Errorf("TestDeleteWorklogForUser: expected error: %s, got: %s", expectedError, err.Error())
+	}
+	//-------------------------
+	//when - cant delete worklog
+	//-------------------------
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
+		httpmock.NewStringResponder(200, readResponse("./responses/issue/TEST-1/worklogsList.json")))
+
+	sumOk, sumError, err = DeleteWorklogForUser("jenkins_jira", "TEST-1")
+	//-------------------------
+	//then assert error deleting
+	//-------------------------
+	if sumError != 1 && sumOk == 0 {
+		t.Errorf("TestDeleteWorklogForUser: expected bad request for DELETE worklog 367175, errors slice should be equal 1 element, got: %x", sumError)
+	}
+	//-------------------------
+	//when - positive scenario we can delete 367175
+	//-------------------------
+	httpmock.RegisterResponder("DELETE", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog/367175",
+		httpmock.NewStringResponder(204, ""))
+
+	sumOk, sumError, err = DeleteWorklogForUser("jenkins_jira", "TEST-1")
+	//-------------------------
+	//then assert 1 deleted, no errors
+	//-------------------------
+	sumOk, sumError, err = DeleteWorklogForUser("jenkins_jira", "TEST-1")
+
+	if err != nil && sumError != 0 && sumOk != 1 {
+		t.Errorf("TestDeleteWorklogForUser: expected no errors, no bad DELETE requests, one successful request, but got: errors: %v, bad DELETE requests: %d, successful request: %d", err, sumError, sumOk)
 	}
 }
 
@@ -447,5 +496,68 @@ func TestGetTransitions(t *testing.T) {
 	}
 	if transitions[0].Name != "Reviewed" {
 		t.Errorf("TestGetTransitions: expected id: Reviewed, got: %s", transitions[0].Name)
+	}
+}
+
+func TestListWorklog(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1/worklogsList.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
+		httpmock.NewStringResponder(200, response))
+
+	worklogs, _ := ListWorklog("TEST-1")
+
+	if worklogs.Total != 2 {
+		t.Errorf("TestListWorklog: expected length: 2, got: %d", worklogs.Total)
+	}
+
+	expFirstId := "359998"
+	if worklogs.Worklogs[0].Id != expFirstId {
+		t.Errorf("TestListWorklog: expected first worklog id: 359998, got: %s", worklogs.Worklogs[0].Id)
+	}
+}
+
+func TestDeleteWorklog(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	httpmock.RegisterResponder("DELETE", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog/666",
+		httpmock.NewStringResponder(204, ""))
+
+	status, _ := DeleteWorklog("TEST-1", "666")
+
+	if status != 204 {
+		t.Errorf("TestDeleteWorklog: expected status 204 got: %d", status)
+	}
+}
+
+func TestGetIssues (t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response1 := readResponse("./responses/issue/TEST-1.json")
+	response2 := readResponse("./responses/issue/TEST-2.json")
+	response404 := readResponse("./responses/issue/404.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(200, response1))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-2",
+		httpmock.NewStringResponder(200, response2))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-3",
+		httpmock.NewStringResponder(404, response404))
+
+	issues := GetIssues([]string{"TEST-1", "TEST-2", "TEST-3"})
+
+	if len(issues) != 2 {
+		t.Errorf("TestGetIssues: expected length: 2, got: %d", len(issues))
+	}
+
+	if issues[0].Id != "10000" {
+		t.Errorf("TestGetIssues: expected first element Id 10000, got: %s", issues[0].Id)
+	}
+
+	if issues[1].Id != "10001" {
+		t.Errorf("TestGetIssues: expected first element Id 10001, got: %s", issues[1].Id)
 	}
 }
