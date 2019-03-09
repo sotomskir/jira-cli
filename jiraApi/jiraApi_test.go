@@ -15,6 +15,7 @@
 package jiraApi
 
 import (
+	"github.com/spf13/viper"
 	"gopkg.in/jarcoal/httpmock.v1"
 	"io/ioutil"
 	"testing"
@@ -41,13 +42,13 @@ func TestGetIssue(t *testing.T) {
 	expectedKey := "TEST-1"
 	expectedSummary := "ax"
 	if issue.Id != expectedId {
-		t.Errorf("TestGetIssue: expected: %s, got: %s\n", expectedId, issue.Id)
+		t.Errorf("TestGetIssue: expected: %s, got: %s", expectedId, issue.Id)
 	}
 	if issue.Key != expectedKey {
-		t.Errorf("TestGetIssue: expected: %s, got: %s\n", expectedKey, issue.Key)
+		t.Errorf("TestGetIssue: expected: %s, got: %s", expectedKey, issue.Key)
 	}
 	if issue.Fields.Summary != expectedSummary {
-		t.Errorf("TestGetIssue: expected: %s, got: %s\n", expectedSummary, issue.Fields.Summary)
+		t.Errorf("TestGetIssue: expected: %s, got: %s", expectedSummary, issue.Fields.Summary)
 	}
 }
 
@@ -61,13 +62,13 @@ func TestGetProjects(t *testing.T) {
 
 	projects := GetProjects()
 	if len(projects) != 2 {
-		t.Errorf("TestGetProjects: expected length: 2, got: %d\n", len(projects))
+		t.Errorf("TestGetProjects: expected length: 2, got: %d", len(projects))
 	}
 	if projects[0].Id != "10001" {
-		t.Errorf("TestGetProjects: expected id: 10001, got: %s\n", projects[0].Id)
+		t.Errorf("TestGetProjects: expected id: 10001, got: %s", projects[0].Id)
 	}
 	if projects[1].Id != "10000" {
-		t.Errorf("TestGetProjects: expected id: 10000, got: %s\n", projects[1].Id)
+		t.Errorf("TestGetProjects: expected id: 10000, got: %s", projects[1].Id)
 	}
 }
 
@@ -87,7 +88,7 @@ func TestSetFixVersion(t *testing.T) {
 		panic(err)
 	}
 	if status != 204 {
-		t.Errorf("TestSetFixVersion: expected status: 204, got: %d\n", status)
+		t.Errorf("TestSetFixVersion: expected status: 204, got: %d", status)
 	}
 }
 
@@ -101,13 +102,13 @@ func TestGetProject(t *testing.T) {
 
 	project := GetProject("TEST")
 	if project.Id != "10001" {
-		t.Errorf("TestGetProject: expected id: 10001, got: %s\n", project.Id)
+		t.Errorf("TestGetProject: expected id: 10001, got: %s", project.Id)
 	}
 	if project.Key != "TEST" {
-		t.Errorf("TestGetProject: expected key: TEST, got: %s\n", project.Key)
+		t.Errorf("TestGetProject: expected key: TEST, got: %s", project.Key)
 	}
 	if project.Name != "Test2" {
-		t.Errorf("TestGetProject: expected name: Test2, got: %s\n", project.Name)
+		t.Errorf("TestGetProject: expected name: Test2, got: %s", project.Name)
 	}
 }
 
@@ -124,13 +125,13 @@ func TestGetVersions(t *testing.T) {
 		t.Errorf("Error: expected len: 4, got: %d\n", len(versions))
 	}
 	if versions[0].Id != "10001" {
-		t.Errorf("TestGetVersions: expected id: 10001, got: %s\n", versions[0].Id)
+		t.Errorf("TestGetVersions: expected id: 10001, got: %s", versions[0].Id)
 	}
 	if versions[0].Name != "2.0.0" {
-		t.Errorf("TestGetVersions: expected version: 2.0.0, got: %s\n", versions[0].Name)
+		t.Errorf("TestGetVersions: expected version: 2.0.0, got: %s", versions[0].Name)
 	}
 	if versions[0].Released != true {
-		t.Errorf("TestGetVersions: expected released: true, got: %t\n", versions[0].Released)
+		t.Errorf("TestGetVersions: expected released: true, got: %t", versions[0].Released)
 	}
 }
 
@@ -147,13 +148,13 @@ func TestGetVersion(t *testing.T) {
 		panic(err)
 	}
 	if version.Id != "10003" {
-		t.Errorf("TestGetVersion: expected id: 10003, got: %s\n", version.Id)
+		t.Errorf("TestGetVersion: expected id: 10003, got: %s", version.Id)
 	}
 	if version.Name != "1.2.0" {
-		t.Errorf("TestGetVersion: expected version: 1.2.0, got: %s\n", version.Name)
+		t.Errorf("TestGetVersion: expected version: 1.2.0, got: %s", version.Name)
 	}
 	if version.Released != false {
-		t.Errorf("TestGetVersion: expected released: false, got: %t\n", version.Released)
+		t.Errorf("TestGetVersion: expected released: false, got: %t", version.Released)
 	}
 }
 
@@ -167,13 +168,13 @@ func TestCreateVersion(t *testing.T) {
 
 	version := CreateVersion("TEST", "1.2.0")
 	if version.Id != "10001" {
-		t.Errorf("TestCreateVersion: expected id: 10001, got: %s\n", version.Id)
+		t.Errorf("TestCreateVersion: expected id: 10001, got: %s", version.Id)
 	}
 	if version.Name != "2.0.0" {
-		t.Errorf("TestCreateVersion: expected version: 2.0.0, got: %s\n", version.Name)
+		t.Errorf("TestCreateVersion: expected version: 2.0.0, got: %s", version.Name)
 	}
 	if version.Released != true {
-		t.Errorf("TestCreateVersion: expected released: true, got: %t\n", version.Released)
+		t.Errorf("TestCreateVersion: expected released: true, got: %t", version.Released)
 	}
 }
 
@@ -195,10 +196,10 @@ func TestReleaseVersion(t *testing.T) {
 	count1 := info["GET https://jira.example.com/rest/api/2/project/TEST/versions"]
 	count2 := info["PUT https://jira.example.com/rest/api/2/version/10003"]
 	if count1 != 1 {
-		t.Errorf("TestReleaseVersion: expected api calls: 1, got: %d\n", count1)
+		t.Errorf("TestReleaseVersion: expected api calls: 1, got: %d", count1)
 	}
 	if count2 != 1 {
-		t.Errorf("TestReleaseVersion: expected api calls: 1, got: %d\n", count2)
+		t.Errorf("TestReleaseVersion: expected api calls: 1, got: %d", count2)
 	}
 }
 
@@ -206,7 +207,7 @@ func TestTransitionIssue(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.Activate()
 	Initialize("https://jira.example.com", "user", "pass")
-	setWorkflow()
+	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
 
 	response := readResponse("./responses/issue/TEST-1.json")
 	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
@@ -222,6 +223,63 @@ func TestTransitionIssue(t *testing.T) {
 		panic(err)
 	}
 	if status != 0 {
-		t.Errorf("TestCreateVersion: expected status: 0, got: %d\n", status)
+		t.Errorf("TestTransitionIssue: expected status: 0, got: %d", status)
+	}
+}
+
+func TestWorklog(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1/worklog.json")
+	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
+		httpmock.NewStringResponder(200, response))
+
+	Worklog("TEST-1", 60, "comment")
+
+	httpmock.GetTotalCallCount()
+	info := httpmock.GetCallCountInfo()
+	count := info["POST https://jira.example.com/rest/api/2/issue/TEST-1/worklog"]
+	if count != 1 {
+		t.Errorf("TestWorklog: expected api calls: 1, got: %d", count)
+	}
+}
+
+func TestGetTransitionByName(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1/transitions.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/transitions",
+		httpmock.NewStringResponder(200, response))
+
+	transition := GetTransitionByName("TEST-1", "Reviewed")
+
+	if transition.Id != "81" {
+		t.Errorf("TestGetTransitions: expected id: 81, got: %s", transition.Id)
+	}
+	if transition.Name != "Reviewed" {
+		t.Errorf("TestGetTransitions: expected id: Reviewed, got: %s", transition.Name)
+	}
+}
+
+func TestGetTransitions(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1/transitions.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/transitions",
+		httpmock.NewStringResponder(200, response))
+
+	transitions := GetTransitions("TEST-1")
+
+	if len(transitions) != 1 {
+		t.Errorf("TestGetTransitions: expected length: 1, got: %d", len(transitions))
+	}
+	if transitions[0].Id != "81" {
+		t.Errorf("TestGetTransitions: expected id: 81, got: %s", transitions[0].Id)
+	}
+	if transitions[0].Name != "Reviewed" {
+		t.Errorf("TestGetTransitions: expected id: Reviewed, got: %s", transitions[0].Name)
 	}
 }

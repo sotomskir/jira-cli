@@ -2,13 +2,31 @@ package jiraApi
 
 import (
 	"github.com/spf13/viper"
+	"gopkg.in/jarcoal/httpmock.v1"
 	"testing"
 )
 
 func TestReadWorkflowFromVar(t *testing.T) {
-	setWorkflow()
+	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
 	workflow := ReadWorkflow("")
+	checkWorkflow(workflow, t)
+}
 
+func TestReadWorkflowFromHttp(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	httpmock.RegisterResponder("GET", "https://example.com/workflow",
+		httpmock.NewStringResponder(200, getWorkflowString()))
+	workflow := ReadWorkflow("https://example.com/workflow")
+	checkWorkflow(workflow, t)
+}
+
+func TestReadWorkflowFromFile(t *testing.T) {
+	workflow := ReadWorkflow("./responses/workflow.yaml")
+	checkWorkflow(workflow, t)
+}
+
+func checkWorkflow(workflow Workflow, t *testing.T) {
 	tables := []struct {
 		currentStatus      string
 		targetStatus       string
@@ -23,7 +41,6 @@ func TestReadWorkflowFromVar(t *testing.T) {
 		{"in test", "done", "done"},
 		{"in test", "rejected", "bug found"},
 	}
-
 	for _, table := range tables {
 		transition, err := workflow.GetOrDefault(table.currentStatus, table.targetStatus)
 		if err != nil {
@@ -35,10 +52,9 @@ func TestReadWorkflowFromVar(t *testing.T) {
 	}
 }
 
-func setWorkflow() {
-	viper.Set(
-		"JIRA_WORKFLOW_CONTENT",
-		`
+func getWorkflowString() string {
+	viper.SetConfigType("yaml")
+	return `
 workflow:
  code review:
    default: ready to test
@@ -54,6 +70,5 @@ workflow:
    default: reopen
  rejected:
    default: reopen
-`)
-	viper.SetConfigType("yaml")
+`
 }

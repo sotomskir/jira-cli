@@ -1,0 +1,15 @@
+workflow:
+  code review:
+    default: ready to test
+  in test:
+    done: done
+    default: bug found
+  to do:
+    rejected: reject
+    default: start progress
+  in progress:
+    default: code review
+  done:
+    default: reopen
+  rejected:
+    default: reopen

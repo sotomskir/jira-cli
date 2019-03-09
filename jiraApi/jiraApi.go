@@ -248,7 +248,7 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 func GetTransitionByName(issueKey string, transitionName string) models.Transition {
 	transitions := GetTransitions(issueKey)
 	for _, t := range transitions {
-		if strings.ToLower(t.Name) == transitionName {
+		if strings.ToLower(t.Name) == strings.ToLower(transitionName) {
 			return t
 		}
 	}
