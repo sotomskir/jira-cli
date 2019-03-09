@@ -6,22 +6,30 @@ import (
 	"testing"
 )
 
+func TestReadWorkflowFromHttp(t *testing.T) {
+	viper.Reset()
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	httpmock.RegisterResponder("GET", "https://example.com/workflow",
+		httpmock.NewStringResponder(200, getWorkflowString()))
+	workflow := ReadWorkflow("https://example.com/workflow")
+	httpmock.GetTotalCallCount()
+	info := httpmock.GetCallCountInfo()
+	count := info["GET https://example.com/workflow"]
+	if count != 1 {
+		t.Errorf("TestReadWorkflowFromHttp: expected api calls: 1, got: %d", count)
+	}
+	checkWorkflow(workflow, t)
+}
+
 func TestReadWorkflowFromVar(t *testing.T) {
 	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
 	workflow := ReadWorkflow("")
 	checkWorkflow(workflow, t)
 }
 
-func TestReadWorkflowFromHttp(t *testing.T) {
-	defer httpmock.DeactivateAndReset()
-	httpmock.Activate()
-	httpmock.RegisterResponder("GET", "https://example.com/workflow",
-		httpmock.NewStringResponder(200, getWorkflowString()))
-	workflow := ReadWorkflow("https://example.com/workflow")
-	checkWorkflow(workflow, t)
-}
-
 func TestReadWorkflowFromFile(t *testing.T) {
+	viper.Reset()
 	workflow := ReadWorkflow("./responses/workflow.yaml")
 	checkWorkflow(workflow, t)
 }
