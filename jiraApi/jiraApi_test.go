@@ -201,3 +201,27 @@ func TestReleaseVersion(t *testing.T) {
 		t.Errorf("TestReleaseVersion: expected api calls: 1, got: %d\n", count2)
 	}
 }
+
+func TestTransitionIssue(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	setWorkflow()
+
+	response := readResponse("./responses/issue/TEST-1.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(200, response))
+
+	response = readResponse("./responses/issue/TEST-1/transitions.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/transitions",
+		httpmock.NewStringResponder(200, response))
+
+	status, err := TransitionIssue("", "TEST-1", "code review")
+
+	if err != nil {
+		panic(err)
+	}
+	if status != 0 {
+		t.Errorf("TestCreateVersion: expected status: 0, got: %d\n", status)
+	}
+}

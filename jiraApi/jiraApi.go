@@ -15,13 +15,11 @@
 package jiraApi
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi/models"
-	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
 	"os"
@@ -221,29 +219,19 @@ func Worklog(key string, min uint64, com string) {
 
 // TransitionIssue method executes issue transition
 func TransitionIssue(workflowPath string, issueKey string, targetStatus string) (status int, error error) {
-	ReadWorkflow(workflowPath)
-	lowerTargetStatus := strings.ToLower(targetStatus)
-	workflow := viper.GetStringMap("workflow")
-	if workflow == nil {
-		logrus.Errorln("workflow not present in config file")
-		return 1, errors.New("workflow not present in config file")
-	}
+	workflow := ReadWorkflow(workflowPath)
 	for i := 0; i < 20; i++ {
 		issue, err := GetIssue(issueKey)
 		if err != nil {
 			return 1, err
 		}
 		currentStatus := strings.ToLower(issue.Fields.Status.Name)
-		logrus.Infof("%s: current status: '%s', target status: '%s'\n", issueKey, currentStatus, lowerTargetStatus)
-		currentStatusTransitions := workflow[currentStatus]
-		if currentStatusTransitions == nil {
-			logrus.Errorf("%s: workflow does not define transitions for status: %s\n", issueKey, currentStatus)
-			return 1, errors.New("workflow error")
-		}
+		logrus.Infof("%s: current status: '%s', target status: '%s'\n", issueKey, currentStatus, targetStatus)
 		if currentStatus == targetStatus {
 			break
 		}
-		transition := GetTransitionByName(issueKey, getByNameOrDefault(cast.ToStringMap(currentStatusTransitions), targetStatus))
+		transitionName, err := workflow.GetOrDefault(currentStatus, targetStatus)
+		transition := GetTransitionByName(issueKey, transitionName)
 		payload := models.Transitions{}
 		payload.Transition = transition
 		logrus.Infof("%s: executing transition: '%s'\n", issueKey, transition.Name)
@@ -254,18 +242,6 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 		}
 	}
 	return 0, nil
-}
-
-func getByNameOrDefault(transitions map[string]interface{}, name string) string {
-	if val, ok := cast.ToStringMap(transitions)[name]; ok {
-		return cast.ToString(val)
-	}
-	if val, ok := cast.ToStringMap(transitions)["default"]; ok {
-		return cast.ToString(val)
-	}
-	logrus.Errorf("transition '%s' is not defined in workflow\n", name)
-	os.Exit(1)
-	return ""
 }
 
 // GetTransitionByName method returns transition details from issue
@@ -304,30 +280,4 @@ func TestTransitions(workflowPath string, issueKey string) {
 			TransitionIssue(workflowPath, issueKey, toState)
 		}
 	}
-}
-
-// ReadWorkflow method loads workflow definition from env var, http url or file
-func ReadWorkflow(workflowPath string) {
-	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
-	if workflowContent != "" {
-		viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))
-		return
-	}
-	if strings.HasPrefix(workflowPath, "http://") || strings.HasPrefix(workflowPath, "https://") {
-		response, err := resty.New().R().Get(workflowPath)
-		logrus.Debugln(response)
-		if err != nil {
-			logrus.Fatalln(response.Body(), err)
-		}
-		viper.MergeConfig(bytes.NewBuffer(response.Body()))
-		return
-	}
-	if _, err := os.Stat(workflowPath); err != nil {
-		if os.IsNotExist(err) {
-			logrus.Errorf("Workflow file not found: %s\n", workflowPath)
-			os.Exit(1)
-		}
-	}
-	viper.SetConfigFile(workflowPath)
-	viper.MergeInConfig()
 }
