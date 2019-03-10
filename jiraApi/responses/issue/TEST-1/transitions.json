@@ -19,6 +19,25 @@
         }
       },
       "fields": {}
+    },
+    {
+      "id": "82",
+      "name": "Reviewed",
+      "to": {
+        "self": "http://jira:8080/rest/api/2/status/10003",
+        "description": "",
+        "iconUrl": "http://jira:8080/images/icons/statuses/generic.png",
+        "name": "Review Done",
+        "id": "10003",
+        "statusCategory": {
+          "self": "http://jira:8080/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "To Do"
+        }
+      },
+      "fields": {}
     }
   ]
 }

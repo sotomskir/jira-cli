@@ -15,6 +15,7 @@
 package jiraApi
 
 import (
+	"errors"
 	"github.com/spf13/viper"
 	"gopkg.in/jarcoal/httpmock.v1"
 	"io/ioutil"
@@ -236,7 +237,7 @@ func TestGetVersion(t *testing.T) {
 
 	version, err := GetVersion("TEST", "1.2.0")
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	if version.Id != "10003" {
 		t.Errorf("TestGetVersion: expected id: 10003, got: %s", version.Id)
@@ -311,10 +312,51 @@ func TestTransitionIssue(t *testing.T) {
 	status, err := TransitionIssue("", "TEST-1", "code review")
 
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	if status != 0 {
 		t.Errorf("TestTransitionIssue: expected status: 0, got: %d", status)
+	}
+}
+
+func TestTransitionIssueWorkflowError(t *testing.T) {
+	viper.Reset()
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+
+	httpmock.RegisterResponder("GET", "http://example.com",
+		httpmock.NewErrorResponder(errors.New("not found")))
+
+	_, err := TransitionIssue("http://example.com", "TEST-1", "code review")
+
+	if err == nil {
+		t.Error("TestTransitionIssueWorkflowError: should return error")
+	}
+	expectedError := " Get http://example.com: not found"
+	if err.Error() != expectedError {
+		t.Errorf("TestTransitionIssueWorkflowError: expected error: %s, got: %s", expectedError, err.Error())
+	}
+}
+
+func TestTransitionIssueGetIssueError(t *testing.T) {
+	viper.Reset()
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
+
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(400, ""))
+
+	_, err := TransitionIssue("", "TEST-1", "code review")
+
+	if err == nil {
+		t.Error("TestTransitionIssueGetIssueError: should return error")
+	}
+	expectedError := "http error: 400"
+	if err.Error() != expectedError {
+		t.Errorf("TestTransitionIssueGetIssueError: expected error: %s, got: %s", expectedError, err.Error())
 	}
 }
 
@@ -336,6 +378,23 @@ func TestWorklog(t *testing.T) {
 	}
 }
 
+func TestWorklogError(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
+		httpmock.NewErrorResponder(errors.New("ERROR")))
+
+	Worklog("TEST-1", 60, "comment")
+
+	httpmock.GetTotalCallCount()
+	info := httpmock.GetCallCountInfo()
+	count := info["POST https://jira.example.com/rest/api/2/issue/TEST-1/worklog"]
+	if count != 1 {
+		t.Errorf("TestWorklog: expected api calls: 1, got: %d", count)
+	}
+}
+
 func TestGetTransitionByName(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.Activate()
@@ -344,13 +403,29 @@ func TestGetTransitionByName(t *testing.T) {
 	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/transitions",
 		httpmock.NewStringResponder(200, response))
 
-	transition := GetTransitionByName("TEST-1", "Reviewed")
-
+	transition, err := GetTransitionByName("TEST-1", "Reviewed")
+	if err != nil {
+		t.Errorf("TestGetTransitionByName: %s", err)
+	}
 	if transition.Id != "81" {
-		t.Errorf("TestGetTransitions: expected id: 81, got: %s", transition.Id)
+		t.Errorf("TestGetTransitionByName: expected id: 81, got: %s", transition.Id)
 	}
 	if transition.Name != "Reviewed" {
-		t.Errorf("TestGetTransitions: expected id: Reviewed, got: %s", transition.Name)
+		t.Errorf("TestGetTransitionByName: expected id: Reviewed, got: %s", transition.Name)
+	}
+}
+
+func TestGetTransitionByNameError(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1/transitions.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/transitions",
+		httpmock.NewStringResponder(200, response))
+
+	_, err := GetTransitionByName("TEST-1", "Non existent transition")
+	if err == nil {
+		t.Error("TestGetTransitionByNameError: should return error when transition not exist")
 	}
 }
 
@@ -364,7 +439,7 @@ func TestGetTransitions(t *testing.T) {
 
 	transitions := GetTransitions("TEST-1")
 
-	if len(transitions) != 1 {
+	if len(transitions) != 2 {
 		t.Errorf("TestGetTransitions: expected length: 1, got: %d", len(transitions))
 	}
 	if transitions[0].Id != "81" {

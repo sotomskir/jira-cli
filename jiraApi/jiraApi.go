@@ -22,7 +22,6 @@ import (
 	"github.com/sotomskir/jira-cli/jiraApi/models"
 	"github.com/spf13/viper"
 	"gopkg.in/resty.v1"
-	"os"
 	"strings"
 	"time"
 )
@@ -40,8 +39,12 @@ func Initialize(serverUrl string, username string, password string) {
 	})
 }
 
-func get(endpoint string, response interface{}) (code int, error error) {
-	res, err := resty.R().Get(endpoint)
+func execute(method string, endpoint string, payload interface{}, response interface{}) (code int, error error) {
+	r := resty.R()
+	if payload != nil {
+		r.SetBody(payload)
+	}
+	res, err := r.Execute(method, endpoint)
 	if err != nil {
 		logrus.Errorln(err)
 		return 1, err
@@ -50,6 +53,10 @@ func get(endpoint string, response interface{}) (code int, error error) {
 	if res.StatusCode() >= 400 {
 		logrus.Debugf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
 		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
+	}
+
+	if res.StatusCode() == 204 {
+		return 204, nil
 	}
 
 	jsonErr := json.Unmarshal(res.Body(), response)
@@ -62,52 +69,10 @@ func get(endpoint string, response interface{}) (code int, error error) {
 	return 0, nil
 }
 
-func post(endpoint string, payload interface{}, response interface{}) (code int, error error) {
-	res, err := resty.R().SetBody(payload).Post(endpoint)
-	if err != nil {
-		logrus.Errorln(err)
-		return 1, err
-	}
-	if res.StatusCode() >= 400 {
-		logrus.Debugf("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
-		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
-	}
-	if res.StatusCode() == 204 {
-		return 204, nil
-	}
-	jsonErr := json.Unmarshal(res.Body(), response)
-	if jsonErr != nil {
-		logrus.Debugf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		return 1, errors.New("unmarshalling error")
-	}
-	return 0, nil
-}
-
-func put(endpoint string, payload interface{}, response interface{}) (code int, error error) {
-	res, err := resty.R().SetBody(payload).Put(endpoint)
-	if err != nil {
-		logrus.Errorln(err)
-		return 1, err
-	}
-	if res.StatusCode() >= 400 {
-		logrus.Debugf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
-		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
-	}
-	if res.StatusCode() == 204 {
-		return 204, nil
-	}
-	jsonErr := json.Unmarshal(res.Body(), response)
-	if jsonErr != nil {
-		logrus.Debugf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
-		return 1, errors.New("unmarshalling error")
-	}
-	return 0, nil
-}
-
 // GetVersions method returns JIRA versions of given project
 func GetVersions(projectKey string) []models.Version {
 	versions := make([]models.Version, 0)
-	get(fmt.Sprintf("rest/api/2/project/%s/versions", projectKey), &versions)
+	execute("GET", fmt.Sprintf("rest/api/2/project/%s/versions", projectKey), nil, &versions)
 	return versions
 }
 
@@ -132,13 +97,13 @@ func CreateVersion(projectKey string, version string) models.Version {
 	payload.Name = version
 	payload.Project = projectKey
 	response := models.Version{}
-	post("rest/api/2/version", payload, &response)
+	execute("POST", "rest/api/2/version", payload, &response)
 	return response
 }
 
 func updateVersion(versionId string, payload models.Version) models.Version {
 	response := models.Version{}
-	put(fmt.Sprintf("rest/api/2/version/%s", versionId), payload, &response)
+	execute("PUT", fmt.Sprintf("rest/api/2/version/%s", versionId), payload, &response)
 	return response
 }
 
@@ -153,14 +118,14 @@ func ReleaseVersion(projectKey string, version string) {
 // GetProject method returns project details
 func GetProject(projectKey string) models.Project {
 	project := models.Project{}
-	get(fmt.Sprintf("rest/api/2/project/%s", projectKey), &project)
+	execute("GET", fmt.Sprintf("rest/api/2/project/%s", projectKey), nil, &project)
 	return project
 }
 
 // GetProjects method list all projects
 func GetProjects() []models.Project {
 	projects := make([]models.Project, 0)
-	get("rest/api/2/project", &projects)
+	execute("GET", "rest/api/2/project", nil, &projects)
 	return projects
 }
 
@@ -187,7 +152,7 @@ func SetFixVersion(issueKey string, version string) error {
 	if err != nil {
 		CreateVersion(project, version)
 	}
-	_, err = put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
+	_, err = execute("PUT", fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
 	if err != nil {
 		return err
 	}
@@ -197,7 +162,7 @@ func SetFixVersion(issueKey string, version string) error {
 // GetIssue method returns issue details
 func GetIssue(issueKey string) (i models.Issue, error error) {
 	issue := models.Issue{}
-	_, err := get(fmt.Sprintf("rest/api/2/issue/%s", issueKey), &issue)
+	_, err := execute("GET", fmt.Sprintf("rest/api/2/issue/%s", issueKey), nil, &issue)
 	if err != nil {
 		return issue, err
 	}
@@ -205,19 +170,21 @@ func GetIssue(issueKey string) (i models.Issue, error error) {
 }
 
 // Worklog method add worklog to issue
-func Worklog(key string, min uint64, com string) {
+func Worklog(key string, min uint64, com string) error {
 	sec := min * 60
 	logrus.Infof("Attempting to add %d[sec] for issue %s.", sec, key)
 	payload := models.AddWorklog{}
 	payload.Comment = com
 	payload.TimeSpentSeconds = sec
 	wr := models.WorklogResp{}
-	post(fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr)
-
-	if len(wr.Id) > 0 {
+	_, err := execute("POST", fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr)
+	if err == nil && len(wr.Id) > 0 {
 		logrus.Infof("Successfully added %d[sec] to issue %s.", sec, key)
+		return nil
 	} else {
-		logrus.Errorf("There was an error adding your time to issue %s.", key)
+		msg := fmt.Sprintf("There was an error adding your time to issue %s.", key)
+		logrus.Error(msg)
+		return errors.New(msg)
 	}
 }
 
@@ -238,11 +205,14 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 			break
 		}
 		transitionName, err := workflow.GetOrDefault(currentStatus, targetStatus)
-		transition := GetTransitionByName(issueKey, transitionName)
+		transition, err := GetTransitionByName(issueKey, transitionName)
+		if err != nil {
+			return 1, err
+		}
 		payload := models.Transitions{}
 		payload.Transition = transition
 		logrus.Infof("%s: executing transition: '%s'\n", issueKey, transition.Name)
-		status, err := post(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
+		status, err := execute("POST", fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
 		if err != nil {
 			logrus.Errorf("%s: executing transition: '%s'\n", issueKey, transition.Name)
 			return status, err
@@ -252,22 +222,20 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 }
 
 // GetTransitionByName method returns transition details from issue
-func GetTransitionByName(issueKey string, transitionName string) models.Transition {
+func GetTransitionByName(issueKey string, transitionName string) (models.Transition, error) {
 	transitions := GetTransitions(issueKey)
-	for _, t := range transitions {
-		if strings.ToLower(t.Name) == strings.ToLower(transitionName) {
-			return t
+	for _, transition := range transitions {
+		if strings.ToLower(transition.Name) == strings.ToLower(transitionName) {
+			return transition, nil
 		}
 	}
-	logrus.Errorf("transition '%s' is not found in transitions of issue: %s\n", transitionName, issueKey)
-	os.Exit(1)
-	return models.Transition{}
+	return models.Transition{}, errors.New(fmt.Sprintf("transition '%s' is not found in transitions of issue: %s\n", transitionName, issueKey))
 }
 
 // GetTransitions method returns available transitions for issue
 func GetTransitions(issueKey string) []models.Transition {
 	transitions := models.Transitions{}
-	get(fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), &transitions)
+	execute("GET", fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), nil, &transitions)
 	return transitions.Transitions
 }
 
