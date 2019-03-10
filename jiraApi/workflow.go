@@ -31,31 +31,30 @@ func (workflow Workflow) GetOrDefault(currentStatus string, targetStatus string)
 }
 
 // ReadWorkflow method loads workflow definition from env var, http url or file
-func ReadWorkflow(workflowPath string) Workflow {
+func ReadWorkflow(workflowPath string) (Workflow, error) {
 	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
 	if workflowContent != "" {
 		err := viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))
 		if err != nil {
-			logrus.Fatalln(err)
+			return Workflow{}, err
 		}
-		return Workflow{viper.GetStringMap("workflow")}
+		return Workflow{viper.GetStringMap("workflow")}, nil
 	}
 	if strings.HasPrefix(workflowPath, "http://") || strings.HasPrefix(workflowPath, "https://") {
 		response, err := resty.New().R().Get(workflowPath)
-		logrus.Debugln(response)
+		logrus.Debugf("%#v\n", response)
 		if err != nil {
-			logrus.Fatalln(response.Body(), err)
+			return Workflow{}, errors.New(fmt.Sprintf("%s %s", response.Body(), err))
 		}
 		viper.MergeConfig(bytes.NewBuffer(response.Body()))
-		return Workflow{viper.GetStringMap("workflow")}
+		return Workflow{viper.GetStringMap("workflow")}, nil
 	}
 	if _, err := os.Stat(workflowPath); err != nil {
 		if os.IsNotExist(err) {
-			logrus.Errorf("Workflow file not found: %s\n", workflowPath)
-			os.Exit(1)
+			return Workflow{}, errors.New(fmt.Sprintf("Workflow file not found: %s\n", workflowPath))
 		}
 	}
 	viper.SetConfigFile(workflowPath)
 	viper.MergeInConfig()
-	return Workflow{viper.GetStringMap("workflow")}
+	return Workflow{viper.GetStringMap("workflow")}, nil
 }

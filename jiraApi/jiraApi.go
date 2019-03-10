@@ -48,8 +48,8 @@ func get(endpoint string, response interface{}) (code int, error error) {
 	}
 
 	if res.StatusCode() >= 400 {
-		logrus.Errorf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
-		return res.StatusCode(), errors.New(string(res.Body()))
+		logrus.Debugf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
+		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
 	}
 
 	jsonErr := json.Unmarshal(res.Body(), response)
@@ -69,15 +69,15 @@ func post(endpoint string, payload interface{}, response interface{}) (code int,
 		return 1, err
 	}
 	if res.StatusCode() >= 400 {
-		logrus.Errorf("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
-		return res.StatusCode(), errors.New(string(res.Body()))
+		logrus.Debugf("POST: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
+		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
 	}
 	if res.StatusCode() == 204 {
 		return 204, nil
 	}
 	jsonErr := json.Unmarshal(res.Body(), response)
 	if jsonErr != nil {
-		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+		logrus.Debugf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
 		return 1, errors.New("unmarshalling error")
 	}
 	return 0, nil
@@ -90,15 +90,15 @@ func put(endpoint string, payload interface{}, response interface{}) (code int, 
 		return 1, err
 	}
 	if res.StatusCode() >= 400 {
-		logrus.Errorf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
-		return res.StatusCode(), errors.New(string(res.Body()))
+		logrus.Debugf("PUT: %s\nStatus code: %d\nRequest: %#v\nResponse: %s\n", endpoint, res.StatusCode(), payload, string(res.Body()))
+		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
 	}
 	if res.StatusCode() == 204 {
 		return 204, nil
 	}
 	jsonErr := json.Unmarshal(res.Body(), response)
 	if jsonErr != nil {
-		logrus.Errorf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
+		logrus.Debugf("StatusCode: %d\nServer responded with invalid JSON: %s\nResponse: %s\n", res.StatusCode(), jsonErr, string(res.Body()))
 		return 1, errors.New("unmarshalling error")
 	}
 	return 0, nil
@@ -173,21 +173,25 @@ func mapVersionName(versions []models.Version) []string {
 }
 
 // SetFixVersion method sets fix version of issue. When version is already set it won't be modified
-func SetFixVersion(issueKey string, version string) (status int, error error) {
+func SetFixVersion(issueKey string, version string) error {
 	response, err := GetIssue(issueKey)
 	if err != nil {
-		return 1, err
+		return err
 	}
 	if len(response.Fields.FixVersions) > 0 {
 		logrus.Warnf("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
-		return 1, errors.New("fix version is already set")
+		return errors.New("fix version is already set")
 	}
 	project := strings.Split(issueKey, "-")[0]
 	_, err = GetVersion(project, version)
 	if err != nil {
 		CreateVersion(project, version)
 	}
-	return put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
+	_, err = put(fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetIssue method returns issue details
@@ -219,7 +223,10 @@ func Worklog(key string, min uint64, com string) {
 
 // TransitionIssue method executes issue transition
 func TransitionIssue(workflowPath string, issueKey string, targetStatus string) (status int, error error) {
-	workflow := ReadWorkflow(workflowPath)
+	workflow, err := ReadWorkflow(workflowPath)
+	if err != nil {
+		return 1, err
+	}
 	for i := 0; i < 20; i++ {
 		issue, err := GetIssue(issueKey)
 		if err != nil {
@@ -265,13 +272,12 @@ func GetTransitions(issueKey string) []models.Transition {
 }
 
 // TestTransitions method run through all transitions to test workflow definition
-func TestTransitions(workflowPath string, issueKey string) {
-	ReadWorkflow(workflowPath)
-	workflow := viper.GetStringMap("workflow")
-	if workflow == nil {
-		logrus.Errorln("workflow not present in config file")
-		os.Exit(1)
+func TestTransitions(workflowPath string, issueKey string) error {
+	_, err := ReadWorkflow(workflowPath)
+	if err != nil {
+		return err
 	}
+	workflow := viper.GetStringMap("workflow")
 	for fromState := range workflow {
 		logrus.Infof("\tTesting transitions from state: '%s'\n", fromState)
 		TransitionIssue(workflowPath, issueKey, fromState)
@@ -280,4 +286,5 @@ func TestTransitions(workflowPath string, issueKey string) {
 			TransitionIssue(workflowPath, issueKey, toState)
 		}
 	}
+	return nil
 }

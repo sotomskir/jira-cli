@@ -40,7 +40,7 @@ If version does not exist it will be created`,
 			wg.Add(1)
 			go func(issueKey string, version string) {
 				defer wg.Done()
-				_, err := jiraApi.SetFixVersion(issueKey, version)
+				err := jiraApi.SetFixVersion(issueKey, version)
 				if err == nil {
 					logrus.Infof("Success version %s set for issue %s\n", version, issueKey)
 				}

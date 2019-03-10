@@ -52,6 +52,40 @@ func TestGetIssue(t *testing.T) {
 	}
 }
 
+func TestGetIssueWithError400(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(400, "Bad request"))
+
+	_, err := GetIssue("TEST-1")
+	expectedError := "http error: 400"
+	if err == nil {
+		t.Errorf("TestGetIssueWithError400: should return error on http 400")
+	}
+	if err != nil && err.Error() != expectedError {
+		t.Errorf("TestGetIssueWithError400: expected error: %s, got: %s", expectedError, err.Error())
+	}
+}
+
+func TestGetIssueWithIncorrectJson(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(200, "some incorrect json"))
+
+	_, err := GetIssue("TEST-1")
+	expectedError := "unmarshalling error"
+	if err == nil {
+		t.Errorf("TestGetIssueWithError400: should return error when response is incorrect json")
+	}
+	if err != nil && err.Error() != expectedError {
+		t.Errorf("TestGetIssueWithError400: expected error: %s, got: %s", expectedError, err.Error())
+	}
+}
+
 func TestGetProjects(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.Activate()
@@ -83,12 +117,69 @@ func TestSetFixVersion(t *testing.T) {
 	httpmock.RegisterResponder("PUT", "https://jira.example.com/rest/api/2/issue/TEST-1",
 		httpmock.NewStringResponder(204, response))
 
-	status, err := SetFixVersion("TEST-1", "1")
+	err := SetFixVersion("TEST-1", "1")
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
-	if status != 204 {
-		t.Errorf("TestSetFixVersion: expected status: 204, got: %d", status)
+}
+
+func TestSetFixVersion404(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(404, response))
+
+	httpmock.RegisterResponder("PUT", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(204, response))
+
+	err := SetFixVersion("TEST-1", "1")
+	if err == nil {
+		t.Error("TestSetFixVersion404: SetFixVersion should return error")
+	}
+	expectedError := "http error: 404"
+	if err != nil && err.Error() != expectedError {
+		t.Errorf("TestGetIssueWithError404: expected error: %s, got: %s", expectedError, err.Error())
+	}
+}
+
+func TestSetFixVersion400(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-1.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(200, response))
+
+	httpmock.RegisterResponder("PUT", "https://jira.example.com/rest/api/2/issue/TEST-1",
+		httpmock.NewStringResponder(400, response))
+
+	err := SetFixVersion("TEST-1", "1")
+	if err == nil {
+		t.Error("TestSetFixVersion400: SetFixVersion should return error")
+	}
+	expectedError := "http error: 400"
+	if err != nil && err.Error() != expectedError {
+		t.Errorf("TestGetIssueWithError400: expected error: %s, got: %s", expectedError, err.Error())
+	}
+}
+
+func TestSetFixVersionAlreadySet(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/issue/TEST-2.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-2",
+		httpmock.NewStringResponder(200, response))
+
+	err := SetFixVersion("TEST-2", "1")
+	if err == nil {
+		t.Error("TestSetFixVersionAlreadySet: SetFixVersion should return error")
+	}
+	expectedError := "fix version is already set"
+	if err != nil && err.Error() != expectedError {
+		t.Errorf("TestSetFixVersionAlreadySet: expected error: %s, got: %s", expectedError, err.Error())
 	}
 }
 

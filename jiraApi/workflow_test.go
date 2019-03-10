@@ -1,6 +1,7 @@
 package jiraApi
 
 import (
+	"errors"
 	"github.com/spf13/viper"
 	"gopkg.in/jarcoal/httpmock.v1"
 	"testing"
@@ -12,7 +13,7 @@ func TestReadWorkflowFromHttp(t *testing.T) {
 	httpmock.Activate()
 	httpmock.RegisterResponder("GET", "https://example.com/workflow",
 		httpmock.NewStringResponder(200, getWorkflowString()))
-	workflow := ReadWorkflow("https://example.com/workflow")
+	workflow, _ := ReadWorkflow("https://example.com/workflow")
 	httpmock.GetTotalCallCount()
 	info := httpmock.GetCallCountInfo()
 	count := info["GET https://example.com/workflow"]
@@ -23,15 +24,67 @@ func TestReadWorkflowFromHttp(t *testing.T) {
 }
 
 func TestReadWorkflowFromVar(t *testing.T) {
+	viper.Reset()
 	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
-	workflow := ReadWorkflow("")
+	workflow, _ := ReadWorkflow("")
 	checkWorkflow(workflow, t)
+}
+
+func TestReadWorkflowErrorsFileNotFound(t *testing.T) {
+	viper.Reset()
+	_, err := ReadWorkflow("")
+	if err == nil {
+		t.Errorf("TestReadWorkflowErrorsFileNotFound: ReadWorkflow should return error when file not exist")
+	}
+	if err.Error() != "Workflow file not found: \n" {
+		t.Errorf("TestReadWorkflowErrorsFileNotFound: expected error: Workflow file not found: \n, got: %s", err.Error())
+	}
+}
+
+func TestReadWorkflowErrorsHttpError(t *testing.T) {
+	viper.Reset()
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	httpmock.RegisterResponder("GET", "http://example.com",
+		httpmock.NewErrorResponder(errors.New("bad request")))
+	_, err := ReadWorkflow("http://example.com")
+	if err == nil {
+		t.Errorf("TestReadWorkflowErrorsHttpError: ReadWorkflow should return http error")
+	}
+	expectedError := " Get http://example.com: bad request"
+	if err != nil && err.Error() != expectedError {
+		t.Errorf("TestReadWorkflowErrorsHttpError: expected error: %s, got: %s", expectedError, err.Error())
+	}
 }
 
 func TestReadWorkflowFromFile(t *testing.T) {
 	viper.Reset()
-	workflow := ReadWorkflow("./responses/workflow.yaml")
+	workflow, _ := ReadWorkflow("./responses/workflow.yaml")
 	checkWorkflow(workflow, t)
+}
+
+func TestWorkflow_GetOrDefault(t *testing.T) {
+	viper.Reset()
+	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
+	workflow, _ := ReadWorkflow("")
+
+	// Should throw error when currentStatus not exist in workflow
+	status, err := workflow.GetOrDefault("non existent status", "")
+	if err == nil {
+		t.Errorf("GetOrDefault should return error when currentStatus not exist")
+	}
+	if status != "" {
+		t.Errorf("GetOrDefault: status shoult be empty, got: %s", status)
+	}
+
+	// Should throw error when target status, or default not exist in workflow
+	status, err = workflow.GetOrDefault("to do", "non existent status")
+	if err == nil {
+		t.Errorf("GetOrDefault should return error when targetStatus not exist")
+	}
+	if status != "" {
+		t.Errorf("GetOrDefault: status shoult be empty, got: %s", status)
+	}
 }
 
 func checkWorkflow(workflow Workflow, t *testing.T) {
@@ -71,7 +124,6 @@ workflow:
    default: bug found
  to do:
    rejected: reject
-   default: start progress
  in progress:
    default: code review
  done:
