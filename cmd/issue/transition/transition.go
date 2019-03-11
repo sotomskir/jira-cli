@@ -43,7 +43,9 @@ var TransitionCmd = &cobra.Command{
 			wg.Add(1)
 			go func(workflow string, issueKey string, targetState string) {
 				defer wg.Done()
-				jiraApi.TransitionIssue(workflow, issueKey, targetState)
+				if _, err := jiraApi.TransitionIssue(workflow, issueKey, targetState); err != nil {
+					logrus.Errorln(err)
+				}
 			}(workflow, issueKey, targetState)
 		}
 		wg.Wait()
