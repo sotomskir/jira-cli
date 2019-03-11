@@ -1,0 +1,89 @@
+{
+  "startAt": 0,
+  "maxResults": 2,
+  "total": 2,
+  "worklogs": [
+    {
+      "self": "https://jira:8080/rest/api/2/issue/1164377/worklog/359998",
+      "author": {
+        "self": "https://jira:8080/rest/api/2/user?username=SotomskiR",
+        "name": "SotomskiR",
+        "key": "sotomskir",
+        "emailAddress": "Robert.Sotomski@test.pl",
+        "avatarUrls": {
+          "48x48": "https://jira:8080/secure/useravatar?ownerId=sotomskir&avatarId=10602",
+          "24x24": "https://jira:8080/secure/useravatar?size=small&ownerId=sotomskir&avatarId=10602",
+          "16x16": "https://jira:8080/secure/useravatar?size=xsmall&ownerId=sotomskir&avatarId=10602",
+          "32x32": "https://jira:8080/secure/useravatar?size=medium&ownerId=sotomskir&avatarId=10602"
+        },
+        "displayName": "Sotomski, Robert",
+        "active": true,
+        "timeZone": "Poland"
+      },
+      "updateAuthor": {
+        "self": "https://jira:8080/rest/api/2/user?username=SotomskiR",
+        "name": "SotomskiR",
+        "key": "sotomskir",
+        "emailAddress": "Robert.Sotomski@test.pl",
+        "avatarUrls": {
+          "48x48": "https://jira:8080/secure/useravatar?ownerId=sotomskir&avatarId=10602",
+          "24x24": "https://jira:8080/secure/useravatar?size=small&ownerId=sotomskir&avatarId=10602",
+          "16x16": "https://jira:8080/secure/useravatar?size=xsmall&ownerId=sotomskir&avatarId=10602",
+          "32x32": "https://jira:8080/secure/useravatar?size=medium&ownerId=sotomskir&avatarId=10602"
+        },
+        "displayName": "Sotomski, Robert",
+        "active": true,
+        "timeZone": "Poland"
+      },
+      "comment": "Working on issue SKUTER-548",
+      "created": "2019-02-19T14:41:22.356+0100",
+      "updated": "2019-02-19T14:41:22.356+0100",
+      "started": "2019-02-19T14:41:37.957+0100",
+      "timeSpent": "1m",
+      "timeSpentSeconds": 60,
+      "id": "359998",
+      "issueId": "1164377"
+    },
+    {
+      "self": "https://jira:8080/rest/api/2/issue/1164377/worklog/367175",
+      "author": {
+        "self": "https://jira:8080/rest/api/2/user?username=jenkins_jira",
+        "name": "jenkins_jira",
+        "key": "jenkins_jira",
+        "emailAddress": "maciej.swiderski@test.pl",
+        "avatarUrls": {
+          "48x48": "https://jira:8080/secure/useravatar?ownerId=jenkins_jira&avatarId=13001",
+          "24x24": "https://jira:8080/secure/useravatar?size=small&ownerId=jenkins_jira&avatarId=13001",
+          "16x16": "https://jira:8080/secure/useravatar?size=xsmall&ownerId=jenkins_jira&avatarId=13001",
+          "32x32": "https://jira:8080/secure/useravatar?size=medium&ownerId=jenkins_jira&avatarId=13001"
+        },
+        "displayName": "jenkins_jira",
+        "active": true,
+        "timeZone": "Poland"
+      },
+      "updateAuthor": {
+        "self": "https://jira:8080/rest/api/2/user?username=jenkins_jira",
+        "name": "jenkins_jira",
+        "key": "jenkins_jira",
+        "emailAddress": "maciej.swiderski@test.pl",
+        "avatarUrls": {
+          "48x48": "https://jira:8080/secure/useravatar?ownerId=jenkins_jira&avatarId=13001",
+          "24x24": "https://jira:8080/secure/useravatar?size=small&ownerId=jenkins_jira&avatarId=13001",
+          "16x16": "https://jira:8080/secure/useravatar?size=xsmall&ownerId=jenkins_jira&avatarId=13001",
+          "32x32": "https://jira:8080/secure/useravatar?size=medium&ownerId=jenkins_jira&avatarId=13001"
+        },
+        "displayName": "jenkins_jira",
+        "active": true,
+        "timeZone": "Poland"
+      },
+      "comment": "comment",
+      "created": "2019-03-08T12:07:37.710+0100",
+      "updated": "2019-03-08T12:07:37.710+0100",
+      "started": "2019-03-08T12:07:37.701+0100",
+      "timeSpent": "10m",
+      "timeSpentSeconds": 600,
+      "id": "367175",
+      "issueId": "1164377"
+    }
+  ]
+}

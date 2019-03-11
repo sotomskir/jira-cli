@@ -16,39 +16,38 @@
 package issue
 
 import (
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
-	"os"
-
 	"github.com/spf13/cobra"
+	"os"
 )
 
-// testWorkflowCmd represents the issueTransitionTest command
-var testWorkflowCmd = &cobra.Command{
-	Use:   "test ISSUE_KEY",
-	Short: "Run through all transitions to test workflow definition yaml file",
-	Args:  cobra.ExactArgs(1),
+// Cmd represents the issue command
+var inspectCmd = &cobra.Command{
+	Use:     "inspect ISSUE_KEY [ISSUE_KEY...]",
+	Aliases: []string{"i"},
+	Args:    cobra.MinimumNArgs(1),
+	Short:   "Fetch data for given issue.",
 	Run: func(cmd *cobra.Command, args []string) {
-		workflow, err := cmd.Flags().GetString("workflow")
-		if err != nil {
-			logrus.Errorln(err)
+		keys := args[0:]
+		issues := jiraApi.GetIssues(keys)
+
+		if len(issues) > 0 {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"ID", "KEY", "STATUS", "SUMMARY"})
+			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+			table.SetCenterSeparator("|")
+			for _, i := range issues {
+				table.Append([]string{i.Id, i.Key, i.Fields.Status.Name, i.Fields.Summary})
+			}
+			table.Render()
+		} else {
+			logrus.Errorf("None of the provided issues %v servers are resolvable.", keys)
 			os.Exit(1)
 		}
-		jiraApi.TestTransitions(workflow, args[0])
-		logrus.Infoln("issueTransitionTest PASSED")
 	},
 }
 
 func init() {
-	Cmd.AddCommand(testWorkflowCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	//testWorkflowCmd.PersistentFlags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
-	testWorkflowCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 }

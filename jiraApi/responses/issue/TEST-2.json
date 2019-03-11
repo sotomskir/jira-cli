@@ -31,11 +31,11 @@
     },
     "fixVersions": [
       {
-        "self": "http://jira:8080/rest/api/2/version/10002",
-        "id": "10002",
-        "name": "1.0.1",
+        "self": "http://jira:8080/secure/rest/api/2/version/13666",
+        "id": "13666",
+        "name": "1",
         "archived": false,
-        "released": false
+        "released": true
       }
     ],
     "aggregatetimespent": null,
@@ -142,7 +142,7 @@
       "self": "http://jira:8080/rest/api/2/status/10002",
       "description": "",
       "iconUrl": "http://jira:8080/images/icons/statuses/generic.png",
-      "name": "Code Review",
+      "name": "Done",
       "id": "10002",
       "statusCategory": {
         "self": "http://jira:8080/rest/api/2/statuscategory/2",
