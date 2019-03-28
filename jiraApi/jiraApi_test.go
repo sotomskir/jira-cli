@@ -309,7 +309,7 @@ func TestTransitionIssue(t *testing.T) {
 	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1/transitions",
 		httpmock.NewStringResponder(200, response))
 
-	status, err := TransitionIssue("", "TEST-1", "code review")
+	status, err := TransitionIssue("", "TEST-1", "code review", "")
 
 	if err != nil {
 		t.Error(err)
@@ -328,7 +328,7 @@ func TestTransitionIssueWorkflowError(t *testing.T) {
 	httpmock.RegisterResponder("GET", "http://example.com",
 		httpmock.NewErrorResponder(errors.New("not found")))
 
-	_, err := TransitionIssue("http://example.com", "TEST-1", "code review")
+	_, err := TransitionIssue("http://example.com", "TEST-1", "code review", "")
 
 	if err == nil {
 		t.Error("TestTransitionIssueWorkflowError: should return error")
@@ -349,7 +349,7 @@ func TestTransitionIssueGetIssueError(t *testing.T) {
 	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
 		httpmock.NewStringResponder(400, ""))
 
-	_, err := TransitionIssue("", "TEST-1", "code review")
+	_, err := TransitionIssue("", "TEST-1", "code review", "")
 
 	if err == nil {
 		t.Error("TestTransitionIssueGetIssueError: should return error")

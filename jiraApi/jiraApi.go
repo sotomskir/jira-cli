@@ -253,7 +253,7 @@ func DeleteWorklogForUser(user string, key string) (sumOk int, sumError int, err
 }
 
 // TransitionIssue method executes issue transition
-func TransitionIssue(workflowPath string, issueKey string, targetStatus string) (status int, error error) {
+func TransitionIssue(workflowPath string, issueKey string, targetStatus string, excludeStatus string) (status int, error error) {
 	workflow, err := ReadWorkflow(workflowPath)
 	if err != nil {
 		return 1, err
@@ -262,6 +262,10 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string) 
 		issue, err := GetIssue(issueKey)
 		if err != nil {
 			return 1, err
+		}
+		if i == 0 && strings.ToLower(issue.Fields.Status.Name) == strings.ToLower(excludeStatus) {
+			logrus.Infof("skipped issue with excluded status: '%s'\n", issueKey)
+			return 0, nil
 		}
 		currentStatus := strings.ToLower(issue.Fields.Status.Name)
 		logrus.Infof("%s: current status: '%s', target status: '%s'\n", issueKey, currentStatus, targetStatus)
@@ -312,10 +316,10 @@ func TestTransitions(workflowPath string, issueKey string) error {
 	workflow := viper.GetStringMap("workflow")
 	for fromState := range workflow {
 		logrus.Infof("\tTesting transitions from state: '%s'\n", fromState)
-		TransitionIssue(workflowPath, issueKey, fromState)
+		TransitionIssue(workflowPath, issueKey, fromState, "")
 		for toState := range workflow {
 			logrus.Infof("\tto state: '%s'\n", toState)
-			TransitionIssue(workflowPath, issueKey, toState)
+			TransitionIssue(workflowPath, issueKey, toState, "")
 		}
 	}
 	return nil

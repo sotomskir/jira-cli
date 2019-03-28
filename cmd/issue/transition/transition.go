@@ -34,6 +34,7 @@ var TransitionCmd = &cobra.Command{
 		targetState := args[0]
 		issueKeys := args[1:]
 		workflow, err := cmd.Flags().GetString("workflow")
+		exclude, _ := cmd.Flags().GetString("exclude")
 		if err != nil {
 			logrus.Errorln(err)
 			os.Exit(1)
@@ -43,7 +44,7 @@ var TransitionCmd = &cobra.Command{
 			wg.Add(1)
 			go func(workflow string, issueKey string, targetState string) {
 				defer wg.Done()
-				if _, err := jiraApi.TransitionIssue(workflow, issueKey, targetState); err != nil {
+				if _, err := jiraApi.TransitionIssue(workflow, issueKey, targetState, exclude); err != nil {
 					logrus.Errorln(err)
 				}
 			}(workflow, issueKey, targetState)
@@ -55,4 +56,5 @@ var TransitionCmd = &cobra.Command{
 func init() {
 	TransitionCmd.AddCommand(testWorkflowCmd)
 	TransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition local file or http URL")
+	TransitionCmd.Flags().StringP("exclude", "e", "", "Exclude issues in given status")
 }
