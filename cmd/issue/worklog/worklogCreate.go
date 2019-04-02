@@ -37,6 +37,9 @@ var worklogCreateCmd = &cobra.Command{
 		issueKeys := args[1:]
 		min, _ := strconv.ParseUint(args[0], 0, 64)
 		com, err := cmd.Flags().GetString("comment")
+		date, _ := cmd.Flags().GetString("date")
+		time, _ := cmd.Flags().GetString("time")
+
 		if err != nil || len(com) == 0 {
 			com = `Automatically added by jira-cli. 
 			We'd love to accept your patches!
@@ -48,15 +51,18 @@ var worklogCreateCmd = &cobra.Command{
 		var wg sync.WaitGroup
 		for _, issueKey := range issueKeys {
 			wg.Add(1)
-			go func(issueKey string, min uint64, com string) {
+			go func(issueKey string, min uint64, com string, date string, time string) {
 				defer wg.Done()
-				jiraApi.AddWorklog(issueKey, min, com)
-			}(issueKey, min, com)
+				jiraApi.AddWorklog(issueKey, min, com, date, time)
+			}(issueKey, min, com, date, time)
 		}
 		wg.Wait()
 	},
 }
 
 func init() {
-	Cmd.Flags().StringP("comment", "c", "", "Comment for worklog entry.")
+	worklogCreateCmd.Flags().StringP("comment", "c", "", "Comment for worklog entry.")
+	worklogCreateCmd.Flags().StringP("date", "d", "", "Explicit date for worklog entry.\nMust adhere to format: YYYY-MM-DD (eg. 2019-04-01).\n[ Default: current date ]")
+	worklogCreateCmd.Flags().StringP("time", "t", "", "Explicit time for worklog entry.\nMust adhere to format: HH:ss (eg. 12:30).\n[ Default: 08:00 ]")
+
 }
