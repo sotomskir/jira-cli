@@ -13,7 +13,10 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 - ./tag-nightly.sh
 
-before_deploy: ./build.sh
+before_deploy:
+- go get github.com/inconshreveable/mousetrap
+- go get github.com/konsorten/go-windows-terminal-sequences
+- ./build.sh
 
 deploy:
   provider: releases
