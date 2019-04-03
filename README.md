@@ -10,7 +10,7 @@ Atlassian's Jira REST API client written in Go for use with CI/CD tools to autom
 ## Install
 ### Linux
 ```bash
-sudo curl -L "https://github.com/sotomskir/jira-cli/releases/download/0.7.0/jira-cli-$(uname -s)-$(uname -m)" -o /usr/local/bin/jira-cli && sudo chmod +x /usr/local/bin/jira-cli
+sudo curl -L "https://github.com/sotomskir/jira-cli/releases/download/nightly/jira-cli-$(uname -s)-$(uname -m)" -o /usr/local/bin/jira-cli && sudo chmod +x /usr/local/bin/jira-cli
 ```
 ### Other platforms
 You can download pre-build binary here: https://github.com/sotomskir/jira-cli/releases
@@ -86,21 +86,6 @@ Use "jira-cli version [command] --help" for more information about a command.
 
 ### Commands
 * [jira-cli](docs/jira-cli.md)	 - CLI client for Atlassian Jira REST API.
-* [jira-cli completion](docs/jira-cli_completion.md)	 - Generates completion scripts
-* [jira-cli completion bash](docs/jira-cli_completion_bash.md)	 - Generates bash completion scripts
-* [jira-cli completion zsh](docs/jira-cli_completion_zsh.md)	 - Generates zsh completion scripts
-* [jira-cli issue](docs/jira-cli_issue.md)	 - Manage Jira issues
-* [jira-cli issue test](docs/jira-cli_issue_test.md)	 - Run through all transitions to test workflow definition yaml file
-* [jira-cli issue transition](docs/jira-cli_issue_transition.md)	 - Transition issue status to given state
-* [jira-cli issue version](docs/jira-cli_issue_version.md)	 - Set issue fix version
-* [jira-cli issue worklog](docs/jira-cli_issue_worklog.md)	 - Manage worklogs for given task
-* [jira-cli login](docs/jira-cli_login.md)	 - Login to Atlassian Jira server
-* [jira-cli project](docs/jira-cli_project.md)	 - Manage Jira projects
-* [jira-cli project ls](docs/jira-cli_project_ls.md)	 - List all projects
-* [jira-cli version](docs/jira-cli_version.md)	 - Manage Jira versions
-* [jira-cli version create](docs/jira-cli_version_create.md)	 - Create new version
-* [jira-cli version ls](docs/jira-cli_version_ls.md)	 - List versions for project
-* [jira-cli version release](docs/jira-cli_version_release.md)	 - Set version status to Released
 
 ## Bash completion
 To load completion run

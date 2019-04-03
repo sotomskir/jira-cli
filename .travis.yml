@@ -16,7 +16,9 @@ after_success:
 deploy:
   provider: releases
   api_key: "$GH_TOKEN"
-  file: "bin/*"
+  file_glob: true
+  file: bin/*
+  prerelease: true
   skip_cleanup: true
   on:
     tags: true
