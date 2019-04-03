@@ -13,12 +13,15 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 - ./tag-nightly.sh
 
+before_deploy: ./build.sh
+
 deploy:
   provider: releases
   api_key: "$GH_TOKEN"
   file_glob: true
   file: bin/*
   prerelease: true
+  overwrite: true
   skip_cleanup: true
   on:
     tags: true
