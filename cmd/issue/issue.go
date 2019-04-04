@@ -31,6 +31,7 @@ var Cmd = &cobra.Command{
 
 func init() {
 	Cmd.AddCommand(inspectCmd)
+	Cmd.AddCommand(createCmd)
 	Cmd.AddCommand(worklog.Cmd)
 	Cmd.AddCommand(version.VersionCmd)
 	Cmd.AddCommand(transition.TransitionCmd)

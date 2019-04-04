@@ -44,15 +44,17 @@ func execute(method string, endpoint string, payload interface{}, response inter
 	r := resty.R()
 	if payload != nil {
 		r.SetBody(payload)
+		p, _ := json.Marshal(payload)
+		logrus.Tracef("Request payload: %s\n", string(p))
 	}
 	res, err := r.Execute(method, endpoint)
+	logrus.Debugf("%s: %s Response: %d %s\n", method, endpoint, res.StatusCode(), string(res.Body()))
 	if err != nil {
 		logrus.Errorln(err)
 		return 1, err
 	}
 
 	if res.StatusCode() >= 400 {
-		logrus.Debugf("GET: %s\nStatus code: %d\nResponse: %s\n", endpoint, res.StatusCode(), string(res.Body()))
 		return res.StatusCode(), errors.New(fmt.Sprintf("http error: %d", res.StatusCode()))
 	}
 
@@ -323,4 +325,18 @@ func TestTransitions(workflowPath string, issueKey string) error {
 		}
 	}
 	return nil
+}
+
+func CreateIssue(projectKey string, summary string, description string, issueType string) (models.Issue, error) {
+	payload := models.Issue{
+		Fields: models.Fields{
+			Summary:     summary,
+			Project:     &models.Project{Key: projectKey},
+			Description: description,
+			IssueType:   &models.IssueType{Name: issueType},
+		},
+	}
+	response := models.Issue{}
+	_, err := execute(resty.MethodPost, "rest/api/2/issue", payload, &response)
+	return response, err
 }

@@ -16,8 +16,11 @@ package jiraApi
 
 import (
 	"errors"
+	"github.com/sotomskir/jira-cli/jiraApi/models"
 	"github.com/spf13/viper"
 	"gopkg.in/jarcoal/httpmock.v1"
+	"gopkg.in/resty.v1"
+	"gotest.tools/assert"
 	"io/ioutil"
 	"testing"
 )
@@ -533,7 +536,7 @@ func TestDeleteWorklog(t *testing.T) {
 	}
 }
 
-func TestGetIssues (t *testing.T) {
+func TestGetIssues(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.Activate()
 	Initialize("https://jira.example.com", "user", "pass")
@@ -560,4 +563,19 @@ func TestGetIssues (t *testing.T) {
 	if issues[1].Id != "10001" {
 		t.Errorf("TestGetIssues: expected first element Id 10001, got: %s", issues[1].Id)
 	}
+}
+
+func TestCreateIssue(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := "{\"id\":\"10109\",\"key\":\"TEST-16\",\"self\":\"http://jira.example.com/rest/api/2/issue/10109\"}"
+	httpmock.RegisterResponder(resty.MethodPost, "https://jira.example.com/rest/api/2/issue",
+		httpmock.NewStringResponder(201, response))
+	issue, err := CreateIssue("TEST", "test", "test", "Task")
+	if err != nil {
+		t.Errorf("TestCreateIssue: unexpected error %#v\n", err)
+	}
+	expected := models.Issue{Id: "10109", Key: "TEST-16", Self: "http://jira.example.com/rest/api/2/issue/10109"}
+	assert.DeepEqual(t, issue, expected)
 }
