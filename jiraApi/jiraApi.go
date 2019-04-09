@@ -194,21 +194,21 @@ func GetIssues(issueKeys []string) []models.Issue {
 }
 
 // Worklog method add worklog to issue
-func AddWorklog(key string, min uint64, com string) error {
-	sec := min * 60
-	logrus.Infof("Attempting to add %d[sec] for issue %s.", sec, key)
-	payload := models.WorklogAdd{}
-	payload.Comment = com
-	payload.TimeSpentSeconds = sec
+func AddWorklog(key string, min uint64, com string, date string, time string) (models.WorklogResp, error) {
+	payload, werr := models.InitilizeWorklogAdd(com, min, date, time)
 	wr := models.WorklogResp{}
+	if werr != nil {
+		return wr, werr
+	}
+	logrus.Infof("Attempting to add %d[sec] for issue %s for date %s.", payload.TimeSpentSeconds, key, payload.Started)
 	_, err := execute(resty.MethodPost, fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr)
 	if err == nil && len(wr.Id) > 0 {
-		logrus.Infof("Successfully added %d[sec] to issue %s.", sec, key)
-		return nil
+		logrus.Infof("Successfully added %d[sec] to issue %s.", payload.TimeSpentSeconds, key)
+		return wr, nil
 	} else {
-		msg := fmt.Sprintf("There was an error adding your time to issue %s.", key)
+		msg := fmt.Sprintf("There was an error adding your time to issue %s. Details: %v", key, err)
 		logrus.Error(msg)
-		return errors.New(msg)
+		return wr, errors.New(msg)
 	}
 }
 

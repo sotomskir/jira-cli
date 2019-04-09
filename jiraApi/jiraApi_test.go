@@ -16,6 +16,7 @@ package jiraApi
 
 import (
 	"errors"
+	"github.com/jonboulle/clockwork"
 	"github.com/sotomskir/jira-cli/jiraApi/models"
 	"github.com/spf13/viper"
 	"gopkg.in/jarcoal/httpmock.v1"
@@ -24,6 +25,8 @@ import (
 	"io/ioutil"
 	"testing"
 )
+
+var fakeClock = clockwork.NewFakeClock()
 
 func readResponse(path string) string {
 	json, err := ioutil.ReadFile(path)
@@ -371,7 +374,7 @@ func TestWorklog(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
 		httpmock.NewStringResponder(200, response))
 
-	AddWorklog("TEST-1", 60, "comment")
+	AddWorklog("TEST-1", 60, "comment", "", "")
 
 	httpmock.GetTotalCallCount()
 	info := httpmock.GetCallCountInfo()
@@ -388,7 +391,7 @@ func TestWorklogError(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
 		httpmock.NewErrorResponder(errors.New("ERROR")))
 
-	AddWorklog("TEST-1", 60, "comment")
+	AddWorklog("TEST-1", 60, "comment", "", "")
 
 	httpmock.GetTotalCallCount()
 	info := httpmock.GetCallCountInfo()
@@ -396,6 +399,18 @@ func TestWorklogError(t *testing.T) {
 	if count != 1 {
 		t.Errorf("TestWorklog: expected api calls: 1, got: %d", count)
 	}
+}
+
+func TestWorklogPayloadError(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/issue/TEST-1/worklog",
+		httpmock.NewErrorResponder(errors.New("ERROR")))
+
+	_, e := AddWorklog("TEST-1", 60, "comment", "wwf", "1")
+
+	assert.Error(t, e, "If provided the date and time must adhere to formats: [YYYY-MM-DD] and [HH:ss]. You provided: date=[ wwf ] and time=[ 1 ]\n")
 }
 
 func TestDeleteWorklogForUser(t *testing.T) {
