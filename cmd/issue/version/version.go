@@ -22,6 +22,14 @@ import (
 	"sync"
 )
 
+var (
+	summary string
+	description string
+	issueType string
+	create bool
+	deployment bool
+)
+
 // VersionCmd represents the issueVersion command
 var VersionCmd = &cobra.Command{
 	Use:   "version VERSION ISSUE_KEY [ISSUE_KEY...]",
@@ -40,7 +48,7 @@ If version does not exist it will be created`,
 			wg.Add(1)
 			go func(issueKey string, version string) {
 				defer wg.Done()
-				err := jiraApi.SetFixVersion(issueKey, version)
+				err := jiraApi.AssignVersion(issueKey, version, create, deployment, summary, description, issueType)
 				if err == nil {
 					logrus.Infof("Success version %s set for issue %s\n", version, issueKey)
 				}
@@ -51,4 +59,9 @@ If version does not exist it will be created`,
 }
 
 func init() {
+	VersionCmd.Flags().StringVarP(&summary, "summary", "s", "", "Deployment issue summary.")
+	VersionCmd.Flags().StringVarP(&description, "description", "d", "", "Deployment issue description.")
+	VersionCmd.Flags().StringVarP(&issueType, "issue-type", "t", "", "Deployment issue type.")
+	VersionCmd.Flags().BoolVarP(&create, "create", "c", true, "Create version if not exists.")
+	VersionCmd.Flags().BoolVarP(&deployment, "create-deployment-issue", "i", true, "Create deployment issue for version if not exists.")
 }

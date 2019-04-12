@@ -95,13 +95,17 @@ func GetVersion(projectKey string, version string) (models.Version, error) {
 }
 
 // CreateVersion creates new version in specified project
-func CreateVersion(projectKey string, version string) models.Version {
+func CreateVersion(projectKey string, version string) (models.Version, bool) {
+	existingVersion, err := GetVersion(projectKey, version)
+	if err == nil  {
+		return existingVersion, false
+	}
 	payload := models.Version{}
 	payload.Name = version
 	payload.Project = projectKey
 	response := models.Version{}
 	execute(resty.MethodPost, "rest/api/2/version", payload, &response)
-	return response
+	return response, true
 }
 
 func updateVersion(versionId string, payload models.Version) models.Version {
@@ -150,16 +154,22 @@ func SetFixVersion(issueKey string, version string) error {
 		logrus.Warnf("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
 		return errors.New("fix version is already set")
 	}
-	project := strings.Split(issueKey, "-")[0]
-	_, err = GetVersion(project, version)
-	if err != nil {
-		CreateVersion(project, version)
-	}
 	_, err = execute(resty.MethodPut, fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func AssignVersion(issueKey string, version string, createVersion bool, createDeploymentIssue bool, summary string, description string, issueType string) error {
+	if createVersion {
+		project := strings.Split(issueKey, "-")[0]
+		_, created := CreateVersion(project, version)
+		if created && createDeploymentIssue {
+			CreateIssue(project, summary, description, issueType)
+		}
+	}
+	return SetFixVersion(issueKey, version)
 }
 
 // GetIssue method returns issue details

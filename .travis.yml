@@ -8,6 +8,7 @@ before_install:
 script:
 - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 - go build
+- sonar-scanner
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
@@ -28,3 +29,9 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+
+addons:
+  sonarcloud:
+    organization: "sotomskir-github"
+    token:
+      secure: "$SONAR_TOKEN"
