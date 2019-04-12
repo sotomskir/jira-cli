@@ -4,15 +4,17 @@ git:
 
 before_install:
 - go get -t -v ./...
+- sudo curl -L "https://github.com/sotomskir/goops/releases/download/nightly/goops-$(uname -s)-$(uname -m)" -o /usr/local/bin/goops && sudo chmod +x /usr/local/bin/goops
+- . <(goops setenv)
 
 script:
 - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 - go build
-- sonar-scanner
+- sonar-scanner -Dsonar.projectVersion=${GOOPS_SEMVER}
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-- ./tag-nightly.sh
+- goops nightly
 
 before_deploy:
 - go get github.com/inconshreveable/mousetrap
