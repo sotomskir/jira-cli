@@ -95,17 +95,17 @@ func GetVersion(projectKey string, version string) (models.Version, error) {
 }
 
 // CreateVersion creates new version in specified project
-func CreateVersion(projectKey string, version string) (models.Version, bool) {
+func CreateVersion(projectKey string, version string) (models.Version, error) {
 	existingVersion, err := GetVersion(projectKey, version)
 	if err == nil  {
-		return existingVersion, false
+		return existingVersion, errors.New("version exists")
 	}
 	payload := models.Version{}
 	payload.Name = version
 	payload.Project = projectKey
 	response := models.Version{}
 	execute(resty.MethodPost, "rest/api/2/version", payload, &response)
-	return response, true
+	return response, nil
 }
 
 func updateVersion(versionId string, payload models.Version) models.Version {
@@ -164,8 +164,8 @@ func SetFixVersion(issueKey string, version string) error {
 func AssignVersion(issueKey string, version string, createVersion bool, createDeploymentIssue bool, summary string, description string, issueType string) error {
 	if createVersion {
 		project := strings.Split(issueKey, "-")[0]
-		_, created := CreateVersion(project, version)
-		if created && createDeploymentIssue {
+		_, err := CreateVersion(project, version)
+		if err != nil && createDeploymentIssue {
 			CreateIssue(project, summary, description, issueType)
 		}
 	}

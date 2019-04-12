@@ -30,7 +30,7 @@ var versionCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
 		projectKey := args[1]
-		response := jiraApi.CreateVersion(projectKey, version)
+		response, _ := jiraApi.CreateVersion(projectKey, version)
 		logrus.Infof("Success version created %#v\n", response)
 	},
 }

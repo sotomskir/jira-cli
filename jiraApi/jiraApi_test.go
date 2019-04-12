@@ -264,7 +264,7 @@ func TestCreateVersion(t *testing.T) {
 	httpmock.RegisterResponder("POST", "https://jira.example.com/rest/api/2/version",
 		httpmock.NewStringResponder(200, response))
 
-	version := CreateVersion("TEST", "1.2.0")
+	version, _ := CreateVersion("TEST", "1.2.0")
 	if version.Id != "10001" {
 		t.Errorf("TestCreateVersion: expected id: 10001, got: %s", version.Id)
 	}
