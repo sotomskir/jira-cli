@@ -1,5 +1,5 @@
 # jira-cli
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sotomskir%3Ajira-cli&metric=alert_status)](https://sonarcloud.io/dashboard?id=sotomskir%3Ajira-cli)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sotomskir_jira-cli&metric=alert_status)](https://sonarcloud.io/dashboard?id=sotomskir_jira-cli)
 [![Build Status](https://travis-ci.org/sotomskir/jira-cli.svg?branch=master)](https://travis-ci.org/sotomskir/jira-cli)
 [![codecov](https://codecov.io/gh/sotomskir/jira-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/sotomskir/jira-cli)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sotomskir/jira-cli)](https://goreportcard.com/report/github.com/sotomskir/jira-cli)
