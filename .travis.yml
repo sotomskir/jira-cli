@@ -15,6 +15,7 @@ script:
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 - goops nightly
+- ./tag-nightly.sh
 
 before_deploy:
 - go get github.com/inconshreveable/mousetrap
