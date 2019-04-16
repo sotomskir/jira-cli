@@ -25,29 +25,36 @@ import (
 	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
+	"sync"
 )
 
 //Cmd workload add command
 var worklogDeleteCmd = &cobra.Command{
 	Use:     "remove ISSUE_KEY",
 	Aliases: []string{"r"},
-	Args:    cobra.ExactArgs(1),
+	Args:    cobra.MinimumNArgs(1),
 	Short:   "Delete all worklogs for logged user from provided ISSUE_KEY",
 	Run: func(cmd *cobra.Command, args []string) {
 		user := viper.GetString("JIRA_USER")
-		key := args[0]
-		sumOk, sumError, err := jiraApi.DeleteWorklogForUser(user, key)
+		issueKeys := args[1:]
+		var wg sync.WaitGroup
+		for _, issueKey := range issueKeys {
+			wg.Add(1)
+			go func(user string, issueKey string) {
+				defer wg.Done()
+				sumOk, sumError, err := jiraApi.DeleteWorklogForUser(user, issueKey)
+				if err != nil {
+					logrus.Errorln(err)
+				}
 
-		if err != nil {
-			os.Exit(1)
+				if sumError == 0 && sumOk == 0 {
+					logrus.Infof("There was no worklogs for user %s in issue %s.", user, issueKey)
+				} else {
+					logrus.Infof("%s Success: %d | Failed: %d", issueKey, sumOk, sumError)
+				}
+			} (user, issueKey)
 		}
-
-		if sumError == 0 && sumOk == 0 {
-			logrus.Infof("There was no worklogs for user %s in issue %s.", user, key)
-		} else {
-			logrus.Infof("Success: %d | Failed: %d", sumOk, sumError)
-		}
+		wg.Wait()
 	},
 }
 
