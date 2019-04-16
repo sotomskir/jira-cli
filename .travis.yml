@@ -14,13 +14,12 @@ script:
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-- goops nightly
 - ./tag-nightly.sh
 
 before_deploy:
 - go get github.com/inconshreveable/mousetrap
 - go get github.com/konsorten/go-windows-terminal-sequences
-- ./tag-nightly.sh
+- ./build.sh
 
 deploy:
   provider: releases
