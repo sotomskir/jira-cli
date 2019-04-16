@@ -36,7 +36,7 @@ var worklogDeleteCmd = &cobra.Command{
 	Short:   "Delete all worklogs for logged user from provided ISSUE_KEY",
 	Run: func(cmd *cobra.Command, args []string) {
 		user := viper.GetString("JIRA_USER")
-		issueKeys := args[1:]
+		issueKeys := args
 		var wg sync.WaitGroup
 		for _, issueKey := range issueKeys {
 			wg.Add(1)

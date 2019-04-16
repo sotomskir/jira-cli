@@ -19,7 +19,7 @@ after_success:
 before_deploy:
 - go get github.com/inconshreveable/mousetrap
 - go get github.com/konsorten/go-windows-terminal-sequences
-- ./build.sh
+- ./tag-nightly.sh
 
 deploy:
   provider: releases
