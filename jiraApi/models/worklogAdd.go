@@ -2,17 +2,14 @@ package models
 
 import (
 	"fmt"
-	"github.com/jonboulle/clockwork"
 	"github.com/pkg/errors"
 	"time"
 )
 
-var clock clockwork.Clock
-
 // WorklogAdd represents request to JIRA API to add worklog
 type WorklogAdd struct {
 	Comment          string `json:"comment"`
-	Started          string `json:"started"`
+	Started          string `json:"started,omitempty"`
 	TimeSpentSeconds uint64 `json:"timeSpentSeconds"`
 }
 
