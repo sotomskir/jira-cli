@@ -40,12 +40,15 @@ func Initialize(serverUrl string, username string, password string) {
 	})
 }
 
-func execute(method string, endpoint string, payload interface{}, response interface{}) (code int, error error) {
+func execute(method string, endpoint string, payload interface{}, response interface{}, queryString string) (code int, error error) {
 	r := resty.R()
 	if payload != nil {
 		r.SetBody(payload)
 		p, _ := json.Marshal(payload)
 		logrus.Tracef("Request payload: %s\n", string(p))
+	}
+    if queryString != "" {
+		r.SetQueryString(queryString)
 	}
 	res, err := r.Execute(method, endpoint)
 	logrus.Debugf("%s: %s Response: %d %s\n", method, endpoint, res.StatusCode(), string(res.Body()))
@@ -75,7 +78,7 @@ func execute(method string, endpoint string, payload interface{}, response inter
 // GetVersions method returns JIRA versions of given project
 func GetVersions(projectKey string) []models.Version {
 	versions := make([]models.Version, 0)
-	execute(resty.MethodGet, fmt.Sprintf("rest/api/2/project/%s/versions", projectKey), nil, &versions)
+	execute(resty.MethodGet, fmt.Sprintf("rest/api/2/project/%s/versions", projectKey), nil, &versions, "")
 	return versions
 }
 
@@ -97,20 +100,20 @@ func GetVersion(projectKey string, version string) (models.Version, error) {
 // CreateVersion creates new version in specified project
 func CreateVersion(projectKey string, version string) (models.Version, error) {
 	existingVersion, err := GetVersion(projectKey, version)
-	if err == nil  {
+	if err == nil {
 		return existingVersion, errors.New("version exists")
 	}
 	payload := models.Version{}
 	payload.Name = version
 	payload.Project = projectKey
 	response := models.Version{}
-	execute(resty.MethodPost, "rest/api/2/version", payload, &response)
+	execute(resty.MethodPost, "rest/api/2/version", payload, &response, "")
 	return response, nil
 }
 
 func updateVersion(versionId string, payload models.Version) models.Version {
 	response := models.Version{}
-	execute(resty.MethodPut, fmt.Sprintf("rest/api/2/version/%s", versionId), payload, &response)
+	execute(resty.MethodPut, fmt.Sprintf("rest/api/2/version/%s", versionId), payload, &response, "")
 	return response
 }
 
@@ -125,14 +128,14 @@ func ReleaseVersion(projectKey string, version string) {
 // GetProject method returns project details
 func GetProject(projectKey string) models.Project {
 	project := models.Project{}
-	execute(resty.MethodGet, fmt.Sprintf("rest/api/2/project/%s", projectKey), nil, &project)
+	execute(resty.MethodGet, fmt.Sprintf("rest/api/2/project/%s", projectKey), nil, &project, "")
 	return project
 }
 
 // GetProjects method list all projects
 func GetProjects() []models.Project {
 	projects := make([]models.Project, 0)
-	execute(resty.MethodGet, "rest/api/2/project", nil, &projects)
+	execute(resty.MethodGet, "rest/api/2/project", nil, &projects, "")
 	return projects
 }
 
@@ -154,7 +157,7 @@ func SetFixVersion(issueKey string, version string) error {
 		logrus.Warnf("Fix version is already set to: %#v\n", mapVersionName(response.Fields.FixVersions))
 		return errors.New("fix version is already set")
 	}
-	_, err = execute(resty.MethodPut, fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response)
+	_, err = execute(resty.MethodPut, fmt.Sprintf("rest/api/2/issue/%s", issueKey), fmt.Sprintf("{\"update\":{\"fixVersions\":[{\"set\":[{\"name\":\"%s\"}]}]}}", version), &response, "")
 	if err != nil {
 		return err
 	}
@@ -175,7 +178,7 @@ func AssignVersion(issueKey string, version string, createVersion bool, createDe
 // GetIssue method returns issue details
 func GetIssue(issueKey string) (i models.Issue, error error) {
 	issue := models.Issue{}
-	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/issue/%s", issueKey), nil, &issue)
+	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/issue/%s", issueKey), nil, &issue, "")
 	if err != nil {
 		return issue, err
 	}
@@ -203,6 +206,15 @@ func GetIssues(issueKeys []string) []models.Issue {
 	return issues
 }
 
+func GetIssuesInVersions(projectKey string, version string) ([]models.Issue, error) {
+	issues := make([]models.Issue, 0)
+	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &issues, fmt.Sprintf("jql=project in (GOLL) and fixVersion in (3.4.0) and issueType in (story)&fields=key,fixVersions,summary"))
+	if err != nil {
+		return issues, err
+	}
+	return issues, nil
+}
+
 // Worklog method add worklog to issue
 func AddWorklog(key string, min uint64, com string, date string, time string) (models.WorklogResp, error) {
 	payload, werr := models.InitilizeWorklogAdd(com, min, date, time)
@@ -211,7 +223,7 @@ func AddWorklog(key string, min uint64, com string, date string, time string) (m
 		return wr, werr
 	}
 	logrus.Infof("Attempting to add %d[sec] for issue %s for date %s.", payload.TimeSpentSeconds, key, payload.Started)
-	_, err := execute(resty.MethodPost, fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr)
+	_, err := execute(resty.MethodPost, fmt.Sprintf("rest/api/2/issue/%s/worklog", key), payload, &wr, "")
 	if err == nil && len(wr.Id) > 0 {
 		logrus.Infof("Successfully added %d[sec] to issue %s.", payload.TimeSpentSeconds, key)
 		return wr, nil
@@ -226,14 +238,14 @@ func AddWorklog(key string, min uint64, com string, date string, time string) (m
 func ListWorklog(key string) (worklogs models.WorklogList, error error) {
 	logrus.Infof("Attempting to list worklogs for issue %s.", key)
 	response := models.WorklogList{}
-	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/issue/%s/worklog", key), nil, &response)
+	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/issue/%s/worklog", key), nil, &response, "")
 	return response, err
 }
 
 //Delete specified worklog (id) from JIRA issue (key)
 func DeleteWorklog(key string, id string) (status int, error error) {
 	endpoint := fmt.Sprintf("rest/api/2/issue/%s/worklog/%s", key, id)
-	res, err := execute(resty.MethodDelete, endpoint, nil, nil)
+	res, err := execute(resty.MethodDelete, endpoint, nil, nil, "")
 	return res, err
 }
 
@@ -292,7 +304,7 @@ func TransitionIssue(workflowPath string, issueKey string, targetStatus string, 
 		payload := models.Transitions{}
 		payload.Transition = transition
 		logrus.Infof("%s: executing transition: '%s'\n", issueKey, transition.Name)
-		status, err := execute(resty.MethodPost, fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil)
+		status, err := execute(resty.MethodPost, fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), payload, nil, "")
 		if err != nil {
 			logrus.Errorf("%s: executing transition: '%s'\n", issueKey, transition.Name)
 			return status, err
@@ -315,7 +327,7 @@ func GetTransitionByName(issueKey string, transitionName string) (models.Transit
 // GetTransitions method returns available transitions for issue
 func GetTransitions(issueKey string) []models.Transition {
 	transitions := models.Transitions{}
-	execute(resty.MethodGet, fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), nil, &transitions)
+	execute(resty.MethodGet, fmt.Sprintf("rest/api/2/issue/%s/transitions", issueKey), nil, &transitions, "")
 	return transitions.Transitions
 }
 
@@ -347,6 +359,6 @@ func CreateIssue(projectKey string, summary string, description string, issueTyp
 		},
 	}
 	response := models.Issue{}
-	_, err := execute(resty.MethodPost, "rest/api/2/issue", payload, &response)
+	_, err := execute(resty.MethodPost, "rest/api/2/issue", payload, &response, "")
 	return response, err
 }
