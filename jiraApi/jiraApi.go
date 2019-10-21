@@ -47,9 +47,11 @@ func execute(method string, endpoint string, payload interface{}, response inter
 		p, _ := json.Marshal(payload)
 		logrus.Tracef("Request payload: %s\n", string(p))
 	}
-    if queryString != "" {
+
+	if queryString != "" {
 		r.SetQueryString(queryString)
 	}
+
 	res, err := r.Execute(method, endpoint)
 	logrus.Debugf("%s: %s Response: %d %s\n", method, endpoint, res.StatusCode(), string(res.Body()))
 	if err != nil {
@@ -207,8 +209,9 @@ func GetIssues(issueKeys []string) []models.Issue {
 }
 
 func GetIssuesInVersions(projectKey string, version string) ([]models.Issue, error) {
+	print(projectKey, version)
 	issues := make([]models.Issue, 0)
-	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &issues, fmt.Sprintf("jql=project in (GOLL) and fixVersion in (3.4.0) and issueType in (story)&fields=key,fixVersions,summary"))
+	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &issues, fmt.Sprintf("jql=project in (STI24) and fixVersion in (3.4.0) and issueType in (story)&fields=key,fixVersions,summary"))
 	if err != nil {
 		return issues, err
 	}
