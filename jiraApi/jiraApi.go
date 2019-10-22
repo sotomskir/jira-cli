@@ -208,13 +208,11 @@ func GetIssues(issueKeys []string) []models.Issue {
 	return issues
 }
 
-func GetIssuesInVersions(projectKey string, version string) ([]models.Issue, error) {
-	issues := make([]models.Issue, 0)
-	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &issues, fmt.Sprintf("jql=project in (%s) and fixVersion in (%v) and issueType in (story)&fields=key,fixVersions,summary", projectKey, version))
-	if err != nil {
-		return issues, err
-	}
-	return issues, nil
+func GetIssuesInVersions(projectKey string, version string) (issuesInVersionList models.IssueList, error error) {
+	response := models.IssueList{}
+	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &response, fmt.Sprintf("jql=project in (%s) and fixVersion in (%v) and issueType in (story,Błąd,zadanie)&fields=key,summary", projectKey, version))
+
+	return response, err
 }
 
 // Worklog method add worklog to issue

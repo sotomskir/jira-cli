@@ -16,9 +16,11 @@
 package version
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
+	"os"
+	"strconv"
 )
 
 // versionCreateCmd represents the versionCreate command
@@ -31,7 +33,16 @@ var tasksCmd = &cobra.Command{
 		projectKey := args[0]
 		version := args[1]
 		response, _ := jiraApi.GetIssuesInVersions(projectKey, version)
-		logrus.Infof("Zwrocono wyniki o wersji %#v\n", response)
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "KEY", "SUMMARY"})
+		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		table.SetCenterSeparator("|")
+		for _, p := range response.Issues {
+			table.Append([]string{p.Id, p.Key, p.Fields.Summary})
+		}
+		table.SetFooter([]string{"", "Total", strconv.Itoa(response.Total)})
+		table.Render()
 	},
 }
 
