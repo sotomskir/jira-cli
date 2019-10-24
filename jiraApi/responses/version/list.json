@@ -1,0 +1,17 @@
+{
+  "expand": "schema,names",
+  "startAt": 0,
+  "maxResults": 50,
+  "total": 1,
+  "issues": [
+    {
+      "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+      "id": "1350616",
+      "self": "https://jira:8080/rest/api/2/issue/1350616",
+      "key": "STI24-3192",
+      "fields": {
+        "summary": "Przyciski kup na dole kafelków funduszy promowanych/polecanych"
+      }
+    }
+  ]
+}
