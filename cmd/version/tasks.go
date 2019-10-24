@@ -25,14 +25,15 @@ import (
 
 // versionCreateCmd represents the versionCreate command
 var tasksCmd = &cobra.Command{
-	Use:     "tasks PROJECT_KEY VERSION",
+	Use:     "tasks PROJECT_KEY VERSION ISSUETYPES",
 	Aliases: []string{"c"},
 	Short:   "Get tasks in version",
-	Args:    cobra.ExactArgs(2),
+	Args:    cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		projectKey := args[0]
 		version := args[1]
-		response, _ := jiraApi.GetIssuesInVersions(projectKey, version)
+		issueTypes := args[2]
+		response, _ := jiraApi.GetIssuesInVersions(projectKey, version, issueTypes)
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"ID", "KEY", "SUMMARY"})

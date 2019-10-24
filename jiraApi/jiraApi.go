@@ -208,9 +208,9 @@ func GetIssues(issueKeys []string) []models.Issue {
 	return issues
 }
 
-func GetIssuesInVersions(projectKey string, version string) (issuesInVersionList models.IssueList, error error) {
+func GetIssuesInVersions(projectKey string, version string, issueTypes string) (issuesInVersionList models.IssueList, error error) {
 	response := models.IssueList{}
-	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &response, fmt.Sprintf("jql=project in (%s) and fixVersion in (%v) and issueType in (story,Błąd,zadanie, innovation)&fields=key,summary", projectKey, version))
+	_, err := execute(resty.MethodGet, fmt.Sprintf("rest/api/2/search"), nil, &response, fmt.Sprintf("jql=project in (%s) and fixVersion in (%s) and issueType in (%s)&fields=key,summary", projectKey, version, issueTypes))
 
 	return response, err
 }
