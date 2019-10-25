@@ -36,13 +36,13 @@ var tasksCmd = &cobra.Command{
 		response, _ := jiraApi.GetIssuesInVersions(projectKey, version, issueTypes)
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "KEY", "SUMMARY"})
+		table.SetHeader([]string{"KEY", "SUMMARY"})
 		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		table.SetCenterSeparator("|")
 		for _, p := range response.Issues {
-			table.Append([]string{p.Id, p.Key, p.Fields.Summary})
+			table.Append([]string{p.Key, p.Fields.Summary})
 		}
-		table.SetFooter([]string{"", "Total", strconv.Itoa(response.Total)})
+		table.SetFooter([]string{"Total", strconv.Itoa(response.Total)})
 		table.Render()
 	},
 }
