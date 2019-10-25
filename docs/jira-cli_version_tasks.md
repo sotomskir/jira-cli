@@ -1,19 +1,19 @@
-## jira-cli version create
+## jira-cli version tasks
 
-Create new version
+Get tasks in version
 
 ### Synopsis
 
-Create new version
+Get tasks in version
 
 ```
-jira-cli version create VERSION PROJECT_KEY [flags]
+jira-cli version tasks PROJECT_KEY VERSION ISSUETYPES [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for create
+  -h, --help   help for tasks
 ```
 
 ### Options inherited from parent commands

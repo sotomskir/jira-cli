@@ -594,3 +594,32 @@ func TestCreateIssue(t *testing.T) {
 	expected := models.Issue{Id: "10109", Key: "TEST-16", Self: "http://jira.example.com/rest/api/2/issue/10109"}
 	assert.DeepEqual(t, issue, expected)
 }
+
+func TestGetIssuesInVersions(t *testing.T) {
+
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	response := readResponse("./responses/version/list.json")
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/search",
+		httpmock.NewStringResponder(200, response))
+
+	issuesInVersions, err := GetIssuesInVersions("TEST", "1.0.0", "story")
+
+	if err != nil {
+		t.Errorf("TestGetIssuesInVersions: unexpected error %#v\n", err)
+	}
+	expected := models.IssueList{
+		Total: 1,
+		Issues: []models.Issue{
+			{
+				Id:     "1350616",
+				Key:    "TEST-3192",
+				Fields: models.Fields{Summary: "Test test tesT Test test tesT Test test tesT Test test tesT"},
+				Self:   "https://jira:8080/rest/api/2/issue/1350616",
+			},
+		},
+	}
+	assert.DeepEqual(t, issuesInVersions, expected)
+
+}
