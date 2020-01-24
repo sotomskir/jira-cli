@@ -1,0 +1,357 @@
+{
+  "layout": {
+    "statuses": [
+      {
+        "id": "S<6>",
+        "name": "Code review",
+        "stepId": 6,
+        "statusId": "10601"
+      },
+      {
+        "id": "S<16>",
+        "name": "In Debbuging",
+        "stepId": 16,
+        "statusId": "11303"
+      },
+      {
+        "id": "S<8>",
+        "name": "Review done",
+        "stepId": 8,
+        "statusId": "10802"
+      },
+      {
+        "id": "S<1>",
+        "name": "To Do",
+        "stepId": 1,
+        "statusId": "10000"
+      },
+      {
+        "id": "I<1>",
+        "name": "Create",
+        "stepId": 1
+      },
+      {
+        "id": "S<11>",
+        "name": "In Progress",
+        "stepId": 11,
+        "statusId": "3"
+      },
+      {
+        "id": "S<14>",
+        "name": "New",
+        "stepId": 14,
+        "statusId": "11306"
+      },
+      {
+        "id": "S<17>",
+        "name": "In test",
+        "stepId": 17,
+        "statusId": "10800"
+      },
+      {
+        "id": "S<3>",
+        "name": "Done",
+        "stepId": 3,
+        "statusId": "10001"
+      },
+      {
+        "id": "S<13>",
+        "name": "On hold",
+        "stepId": 13,
+        "statusId": "10100"
+      },
+      {
+        "id": "S<15>",
+        "name": "UAT",
+        "stepId": 15,
+        "statusId": "11400"
+      },
+      {
+        "id": "S<7>",
+        "name": "Need Info",
+        "stepId": 7,
+        "statusId": "11302"
+      },
+      {
+        "id": "S<12>",
+        "name": "Rejected",
+        "stepId": 12,
+        "statusId": "10101"
+      }
+    ],
+    "transitions": [
+      {
+        "id": "A<111:S<1>:S<7>>",
+        "name": "Need Info",
+        "sourceId": "S<1>",
+        "targetId": "S<7>",
+        "actionId": 111,
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<201:S<13>:S<1>>",
+        "name": "To Do",
+        "sourceId": "S<13>",
+        "targetId": "S<1>",
+        "actionId": 201,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<231:S<1>:S<12>>",
+        "name": "Rejected",
+        "sourceId": "S<1>",
+        "targetId": "S<12>",
+        "actionId": 231,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<211:S<14>:S<13>>",
+        "name": "On Hold",
+        "sourceId": "S<14>",
+        "targetId": "S<13>",
+        "actionId": 211,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<241:S<12>:S<1>>",
+        "name": "Reopen",
+        "sourceId": "S<12>",
+        "targetId": "S<1>",
+        "actionId": 241,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<71:S<6>:S<8>>",
+        "name": "Review Done",
+        "sourceId": "S<6>",
+        "targetId": "S<8>",
+        "actionId": 71,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<231:S<14>:S<12>>",
+        "name": "Rejected",
+        "sourceId": "S<14>",
+        "targetId": "S<12>",
+        "actionId": 231,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<211:S<1>:S<13>>",
+        "name": "On Hold",
+        "sourceId": "S<1>",
+        "targetId": "S<13>",
+        "actionId": 211,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<341:S<16>:S<11>>",
+        "name": "Start Fix",
+        "sourceId": "S<16>",
+        "targetId": "S<11>",
+        "actionId": 341,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<51:S<3>:S<1>>",
+        "name": "Reopen",
+        "sourceId": "S<3>",
+        "targetId": "S<1>",
+        "actionId": 51,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<301:S<14>:S<1>>",
+        "name": "Accepted",
+        "sourceId": "S<14>",
+        "targetId": "S<1>",
+        "actionId": 301,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<261:S<6>:S<11>>",
+        "name": "Bug in Code",
+        "sourceId": "S<6>",
+        "targetId": "S<11>",
+        "actionId": 261,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<181:S<11>:S<6>>",
+        "name": "Code Review",
+        "sourceId": "S<11>",
+        "targetId": "S<6>",
+        "actionId": 181,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<361:S<8>:S<17>>",
+        "name": "Ready to Test",
+        "sourceId": "S<8>",
+        "targetId": "S<17>",
+        "actionId": 361,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<171:S<1>:S<11>>",
+        "name": "Start Progress",
+        "sourceId": "S<1>",
+        "targetId": "S<11>",
+        "actionId": 171,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<311:S<13>:S<14>>",
+        "name": "Backlog",
+        "sourceId": "S<13>",
+        "targetId": "S<14>",
+        "actionId": 311,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<321:S<15>:S<3>>",
+        "name": "Done",
+        "sourceId": "S<15>",
+        "targetId": "S<3>",
+        "actionId": 321,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "IA<1:I<1>:S<14>>",
+        "name": "Create",
+        "sourceId": "I<1>",
+        "targetId": "S<14>",
+        "actionId": 1,
+        "initial": true,
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<351:S<11>:S<1>>",
+        "name": "To Do",
+        "sourceId": "S<11>",
+        "targetId": "S<1>",
+        "actionId": 351,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<251:S<11>:S<7>>",
+        "name": "Need Info",
+        "sourceId": "S<11>",
+        "targetId": "S<7>",
+        "actionId": 251,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<331:S<15>:S<16>>",
+        "name": "Bug Found",
+        "sourceId": "S<15>",
+        "targetId": "S<16>",
+        "actionId": 331,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<371:S<17>:S<15>>",
+        "name": "Testing Done",
+        "sourceId": "S<17>",
+        "targetId": "S<15>",
+        "actionId": 371,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<291:S<11>:S<12>>",
+        "name": "Rejected",
+        "sourceId": "S<11>",
+        "targetId": "S<12>",
+        "actionId": 291,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<311:S<12>:S<14>>",
+        "name": "Backlog",
+        "sourceId": "S<12>",
+        "targetId": "S<14>",
+        "actionId": 311,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      },
+      {
+        "id": "A<281:S<7>:S<1>>",
+        "name": "Info Added",
+        "sourceId": "S<7>",
+        "targetId": "S<1>",
+        "actionId": 281,
+        "initial": false,
+        "description": "",
+        "globalTransition": false,
+        "loopedTransition": false
+      }
+    ]
+  }
+}

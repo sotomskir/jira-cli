@@ -17,8 +17,8 @@ type WorklogAdd struct {
 func InitilizeWorklogAdd(com string, workedSec uint64, d string, t string) (WorklogAdd, error) {
 	w := WorklogAdd{Comment: com, TimeSpentSeconds: workedSec * 60}
 	if d != "" || t != "" {
-		n, _ := time.Now().Zone()
-		ut, e := time.Parse("2006-01-02 15:04 MST", d+" "+t+" "+n)
+		n := time.Now().Format("-0700")
+		ut, e := time.Parse("2006-01-02 15:04 -0700", d+" "+t+" "+n)
 		if e != nil {
 			msg := fmt.Sprintln("If provided the date and time must adhere to formats: [YYYY-MM-DD] and [HH:ss]. You provided: date=[", d, "] and time=[", t, "]")
 			return WorklogAdd{}, errors.New(msg)

@@ -1,0 +1,23 @@
+{
+  "layout": {
+    "statuses": [
+      {
+        "id": "S<6>",
+        "name": "Code review",
+        "stepId": 6,
+        "statusId": "10601"
+      }
+    ],
+    "transitions": [
+      {
+        "id": "A<111:S<1>:S<7>>",
+        "name": "Need Info",
+        "sourceId": "S<1>",
+        "targetId": "S<7>",
+        "actionId": 111,
+        "globalTransition": false,
+        "loopedTransition": false
+      }
+    ]
+  }
+}

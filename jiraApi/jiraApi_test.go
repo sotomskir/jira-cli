@@ -18,7 +18,6 @@ import (
 	"errors"
 	"github.com/jonboulle/clockwork"
 	"github.com/sotomskir/jira-cli/jiraApi/models"
-	"github.com/spf13/viper"
 	"gopkg.in/jarcoal/httpmock.v1"
 	"gopkg.in/resty.v1"
 	"gotest.tools/assert"
@@ -305,7 +304,12 @@ func TestTransitionIssue(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.Activate()
 	Initialize("https://jira.example.com", "user", "pass")
-	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
+
+	workflowResponse := readResponse("./responses/workflows/workflow_full.json")
+	httpmock.RegisterResponder("GET", "https://user:pass@jira.example.com/browse/TEST-1",
+		httpmock.NewStringResponder(200, "<html><a href=\"workflowName=test-workflow&test=test\" class=\"jira-workflow-designer-link\"></a></html>"))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/workflowDesigner/latest/workflows?name=test-workflow",
+		httpmock.NewStringResponder(200, workflowResponse))
 
 	response := readResponse("./responses/issue/TEST-1.json")
 	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
@@ -322,47 +326,6 @@ func TestTransitionIssue(t *testing.T) {
 	}
 	if status != 0 {
 		t.Errorf("TestTransitionIssue: expected status: 0, got: %d", status)
-	}
-}
-
-func TestTransitionIssueWorkflowError(t *testing.T) {
-	viper.Reset()
-	defer httpmock.DeactivateAndReset()
-	httpmock.Activate()
-	Initialize("https://jira.example.com", "user", "pass")
-
-	httpmock.RegisterResponder("GET", "http://example.com",
-		httpmock.NewErrorResponder(errors.New("not found")))
-
-	_, err := TransitionIssue("http://example.com", "TEST-1", "code review", "")
-
-	if err == nil {
-		t.Error("TestTransitionIssueWorkflowError: should return error")
-	}
-	expectedError := " Get http://example.com: not found"
-	if err.Error() != expectedError {
-		t.Errorf("TestTransitionIssueWorkflowError: expected error: %s, got: %s", expectedError, err.Error())
-	}
-}
-
-func TestTransitionIssueGetIssueError(t *testing.T) {
-	viper.Reset()
-	defer httpmock.DeactivateAndReset()
-	httpmock.Activate()
-	Initialize("https://jira.example.com", "user", "pass")
-	viper.Set("JIRA_WORKFLOW_CONTENT", getWorkflowString())
-
-	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/api/2/issue/TEST-1",
-		httpmock.NewStringResponder(400, ""))
-
-	_, err := TransitionIssue("", "TEST-1", "code review", "")
-
-	if err == nil {
-		t.Error("TestTransitionIssueGetIssueError: should return error")
-	}
-	expectedError := "http error: 400"
-	if err.Error() != expectedError {
-		t.Errorf("TestTransitionIssueGetIssueError: expected error: %s, got: %s", expectedError, err.Error())
 	}
 }
 
@@ -622,4 +585,84 @@ func TestGetIssuesInVersions(t *testing.T) {
 	}
 	assert.DeepEqual(t, issuesInVersions, expected)
 
+}
+
+func TestGetIssueWorkflow(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	workflowResponse := readResponse("./responses/workflows/workflow.json")
+	httpmock.RegisterResponder("GET", "https://user:pass@jira.example.com/browse/TEST-1",
+		httpmock.NewStringResponder(200, "<html><a href=\"workflowName=test-workflow&test=test\" class=\"jira-workflow-designer-link\"></a></html>"))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/workflowDesigner/latest/workflows?name=test-workflow",
+		httpmock.NewStringResponder(200, workflowResponse))
+
+	workflow, err := GetIssueWorkflow("TEST-1")
+
+	if err != nil {
+		t.Errorf("TestGetIssueWorkflow: unexpected error: %#v\n", err)
+	}
+	expected := &models.Workflow{
+		Layout: models.WorkflowLayout{
+			Statuses: []models.Status{
+				{
+					Id:       "S<6>",
+					Name:     "Code review",
+					StepId:   6,
+					StatusId: "10601",
+				},
+			},
+			Transitions: []models.Transition{
+				{
+					Id:               "A<111:S<1>:S<7>>",
+					Name:             "Need Info",
+					SourceId:         "S<1>",
+					TargetId:         "S<7>",
+					ActionId:         111,
+					Initial:          false,
+					GlobalTransition: false,
+					LoopedTransition: false,
+				},
+			},
+		},
+	}
+	assert.DeepEqual(t, workflow, expected)
+}
+
+func TestBuildWorkflow(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	workflowResponse := readResponse("./responses/workflows/workflow_full.json")
+	httpmock.RegisterResponder("GET", "https://user:pass@jira.example.com/browse/TEST-1",
+		httpmock.NewStringResponder(200, "<html><a href=\"workflowName=test-workflow&test=test\" class=\"jira-workflow-designer-link\"></a></html>"))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/workflowDesigner/latest/workflows?name=test-workflow",
+		httpmock.NewStringResponder(200, workflowResponse))
+
+	workflow, err := GetIssueWorkflow("TEST-1")
+	if err != nil {
+		t.Errorf("TestBuildWorkflow: unexpected error: %#v\n", err)
+	}
+
+	actual := BuildWorkflow(workflow, "to do", "uat")
+
+	expected := &WorkflowTransitionsMap{Workflow: map[string]interface{}{
+		"to do": map[string]string{
+			"default": "start progress",
+		},
+		"in progress": map[string]string{
+			"default": "code review",
+		},
+		"code review": map[string]string{
+			"default": "review done",
+		},
+		"review done": map[string]string{
+			"default": "ready to test",
+		},
+		"in test": map[string]string{
+			"default": "testing done",
+		},
+	}}
+
+	assert.DeepEqual(t, actual, expected)
 }

@@ -55,6 +55,6 @@ var TransitionCmd = &cobra.Command{
 
 func init() {
 	TransitionCmd.AddCommand(testWorkflowCmd)
-	TransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition local file or http URL")
+	TransitionCmd.Flags().StringP("workflow", "w", "workflow.yaml", "WorkflowTransitionsMap definition local file or http URL")
 	TransitionCmd.Flags().StringP("exclude", "e", "", "Exclude issues in given status")
 }
