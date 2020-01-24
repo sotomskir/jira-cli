@@ -36,8 +36,8 @@ func TestReadWorkflowErrorsFileNotFound(t *testing.T) {
 	if err == nil {
 		t.Errorf("TestReadWorkflowErrorsFileNotFound: ReadWorkflow should return error when file not exist")
 	}
-	if err.Error() != "Workflow file not found: \n" {
-		t.Errorf("TestReadWorkflowErrorsFileNotFound: expected error: Workflow file not found: \n, got: %s", err.Error())
+	if err.Error() != "WorkflowTransitionsMap file not found: \n" {
+		t.Errorf("TestReadWorkflowErrorsFileNotFound: expected error: WorkflowTransitionsMap file not found: \n, got: %s", err.Error())
 	}
 }
 
@@ -87,7 +87,7 @@ func TestWorkflow_GetOrDefault(t *testing.T) {
 	}
 }
 
-func checkWorkflow(workflow Workflow, t *testing.T) {
+func checkWorkflow(workflow WorkflowTransitionsMap, t *testing.T) {
 	tables := []struct {
 		currentStatus      string
 		targetStatus       string

@@ -623,3 +623,67 @@ func TestGetIssuesInVersions(t *testing.T) {
 	assert.DeepEqual(t, issuesInVersions, expected)
 
 }
+
+func TestGetIssueWorkflow(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	workflowResponse := readResponse("./responses/workflows/workflow.json")
+	httpmock.RegisterResponder("GET", "https://user:pass@jira.example.com/browse/TEST-1",
+		httpmock.NewStringResponder(200, "<html><a href=\"workflowName=test-workflow&test=test\" class=\"jira-workflow-designer-link\"></a></html>"))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/workflowDesigner/latest/workflows?name=test-workflow",
+		httpmock.NewStringResponder(200, workflowResponse))
+
+	workflow, err := GetIssueWorkflow("TEST-1")
+
+	if err != nil {
+		t.Errorf("TestGetIssueWorkflow: unexpected error: %#v\n", err)
+	}
+	expected := &models.Workflow{
+		Layout: models.WorkflowLayout{
+			Statuses:    []models.Status{
+				{
+					Id:       "S<6>",
+					Name:     "Code review",
+					StepId:   6,
+					StatusId: "10601",
+				},
+			},
+			Transitions: []models.Transition{
+				{
+					Id:               "A<111:S<1>:S<7>>",
+					Name:             "Need Info",
+					SourceId:         "S<1>",
+					TargetId:         "S<7>",
+					ActionId:         111,
+					Initial:          false,
+					GlobalTransition: false,
+					LoopedTransition: false,
+				},
+			},
+		},
+	}
+	assert.DeepEqual(t, workflow, expected)
+}
+
+func TestBuildWorkflow(t *testing.T) {
+	defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	Initialize("https://jira.example.com", "user", "pass")
+	workflowResponse := readResponse("./responses/workflows/workflow_simple.json")
+	httpmock.RegisterResponder("GET", "https://user:pass@jira.example.com/browse/TEST-1",
+		httpmock.NewStringResponder(200, "<html><a href=\"workflowName=test-workflow&test=test\" class=\"jira-workflow-designer-link\"></a></html>"))
+	httpmock.RegisterResponder("GET", "https://jira.example.com/rest/workflowDesigner/latest/workflows?name=test-workflow",
+		httpmock.NewStringResponder(200, workflowResponse))
+
+	workflow, err := GetIssueWorkflow("TEST-1")
+	if err != nil {
+		t.Errorf("TestBuildWorkflow: unexpected error: %#v\n", err)
+	}
+
+	transitionsMap := BuildWorkflow(workflow, "In Progress", "Code Review")
+
+	expected := &WorkflowTransitionsMap{workflow: map[string]interface{}{}}
+
+	assert.DeepEqual(t, transitionsMap, expected)
+}

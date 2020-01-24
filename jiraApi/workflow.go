@@ -12,11 +12,11 @@ import (
 	"strings"
 )
 
-type Workflow struct {
+type WorkflowTransitionsMap struct {
 	workflow map[string]interface{}
 }
 
-func (workflow Workflow) GetOrDefault(currentStatus string, targetStatus string) (string, error) {
+func (workflow WorkflowTransitionsMap) GetOrDefault(currentStatus string, targetStatus string) (string, error) {
 	currentStatusTransitions := workflow.workflow[currentStatus]
 	if currentStatusTransitions == nil {
 		return "", errors.New(fmt.Sprintf("workflow does not define transitions for status: %s\n", currentStatus))
@@ -31,30 +31,30 @@ func (workflow Workflow) GetOrDefault(currentStatus string, targetStatus string)
 }
 
 // ReadWorkflow method loads workflow definition from env var, http url or file
-func ReadWorkflow(workflowPath string) (Workflow, error) {
+func ReadWorkflow(workflowPath string) (WorkflowTransitionsMap, error) {
 	workflowContent := viper.GetString("JIRA_WORKFLOW_CONTENT")
 	if workflowContent != "" {
 		err := viper.MergeConfig(bytes.NewBuffer([]byte(workflowContent)))
 		if err != nil {
-			return Workflow{}, err
+			return WorkflowTransitionsMap{}, err
 		}
-		return Workflow{viper.GetStringMap("workflow")}, nil
+		return WorkflowTransitionsMap{viper.GetStringMap("workflow")}, nil
 	}
 	if strings.HasPrefix(workflowPath, "http://") || strings.HasPrefix(workflowPath, "https://") {
 		response, err := resty.New().R().Get(workflowPath)
 		logrus.Debugf("%#v\n", response)
 		if err != nil {
-			return Workflow{}, errors.New(fmt.Sprintf("%s %s", response.Body(), err))
+			return WorkflowTransitionsMap{}, errors.New(fmt.Sprintf("%s %s", response.Body(), err))
 		}
 		viper.MergeConfig(bytes.NewBuffer(response.Body()))
-		return Workflow{viper.GetStringMap("workflow")}, nil
+		return WorkflowTransitionsMap{viper.GetStringMap("workflow")}, nil
 	}
 	if _, err := os.Stat(workflowPath); err != nil {
 		if os.IsNotExist(err) {
-			return Workflow{}, errors.New(fmt.Sprintf("Workflow file not found: %s\n", workflowPath))
+			return WorkflowTransitionsMap{}, errors.New(fmt.Sprintf("WorkflowTransitionsMap file not found: %s\n", workflowPath))
 		}
 	}
 	viper.SetConfigFile(workflowPath)
 	viper.MergeInConfig()
-	return Workflow{viper.GetStringMap("workflow")}, nil
+	return WorkflowTransitionsMap{viper.GetStringMap("workflow")}, nil
 }

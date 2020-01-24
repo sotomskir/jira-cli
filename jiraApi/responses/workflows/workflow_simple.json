@@ -1,0 +1,54 @@
+{
+  "layout": {
+    "statuses": [
+      {
+        "id": "S<1>"
+      },
+      {
+        "id": "S<2>"
+      },
+      {
+        "id": "S<3>"
+      },
+      {
+        "id": "S<4>"
+      },
+      {
+        "id": "S<5>"
+      },
+      {
+        "id": "S<6>"
+      }
+    ],
+    "transitions": [
+      {
+        "sourceId": "S<1>",
+        "targetId": "S<2>"
+      },
+      {
+        "sourceId": "S<1>",
+        "targetId": "S<3>"
+      },
+      {
+        "sourceId": "S<2>",
+        "targetId": "S<4>"
+      },
+      {
+        "sourceId": "S<2>",
+        "targetId": "S<5>"
+      },
+      {
+        "sourceId": "S<3>",
+        "targetId": "S<4>"
+      },
+      {
+        "sourceId": "S<3>",
+        "targetId": "S<6>"
+      },
+      {
+        "sourceId": "S<4>",
+        "targetId": "S<1>"
+      }
+    ]
+  }
+}

@@ -40,5 +40,5 @@ var testWorkflowCmd = &cobra.Command{
 }
 
 func init() {
-	testWorkflowCmd.Flags().StringP("workflow", "w", "workflow.yaml", "Workflow definition file")
+	testWorkflowCmd.Flags().StringP("workflow", "w", "workflow.yaml", "WorkflowTransitionsMap definition file")
 }
