@@ -33,7 +33,7 @@ var createCmd = &cobra.Command{
 	Aliases: []string{"c"},
 	Short:   "Create new issue",
 	Run: func(cmd *cobra.Command, args []string) {
-		issue, err := jiraApi.CreateIssue(projectKey, summary, description, issueType)
+		issue, err := jiraApi.CreateIssue(projectKey, summary, description, issueType, nil)
 		if err != nil {
 			logrus.Errorln(err)
 			os.Exit(1)

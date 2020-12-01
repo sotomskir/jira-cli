@@ -116,17 +116,23 @@ func GetVersion(projectKey string, version string) (models.Version, error) {
 }
 
 // CreateVersion creates new version in specified project
-func CreateVersion(projectKey string, version string) (models.Version, error) {
+func CreateVersion(projectKey string, version string) (createdVersion models.Version, created bool, err error) {
 	existingVersion, err := GetVersion(projectKey, version)
 	if err == nil {
-		return existingVersion, errors.New("version exists")
+		logrus.Infof("Version %s already exists in project %s\n", version, projectKey)
+		return existingVersion, false, nil
 	}
 	payload := models.Version{}
 	payload.Name = version
 	payload.Project = projectKey
 	response := models.Version{}
-	execute(resty.MethodPost, "rest/api/2/version", payload, &response, "", nil)
-	return response, nil
+	_, err = execute(resty.MethodPost, "rest/api/2/version", payload, &response, "", nil)
+	if err != nil {
+		logrus.Errorf("Error executing rest/api/2/version: %s\n", err)
+		return response, false, err
+	}
+	logrus.Infof("Version %s created in project %s\n", version, projectKey)
+	return response, true, nil
 }
 
 func updateVersion(versionId string, payload models.Version) models.Version {
@@ -182,15 +188,20 @@ func SetFixVersion(issueKey string, version string) error {
 	return nil
 }
 
-func AssignVersion(issueKey string, version string, createVersion bool, createDeploymentIssue bool, summary string, description string, issueType string) error {
-	if createVersion {
-		project := strings.Split(issueKey, "-")[0]
-		_, err := CreateVersion(project, version)
+func CreateFixVersion(projectKey string, version string, createDeploymentIssue bool, summary string, description string, issueType string) error {
+	fixVersion, created, err := CreateVersion(projectKey, version)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Cannot create version: %s in project: %s: %s", version, projectKey, err))
+	}
+	if created && createDeploymentIssue {
+		issue, err := CreateIssue(projectKey, summary, description, issueType, &fixVersion)
 		if err != nil && createDeploymentIssue {
-			CreateIssue(project, summary, description, issueType)
+			return errors.New(fmt.Sprintf("Cannot create deployment issue: %s", err))
+		} else {
+			logrus.Infoln("Deployment issue %s created", issue.Key)
 		}
 	}
-	return SetFixVersion(issueKey, version)
+	return nil
 }
 
 // GetIssue method returns issue details
@@ -426,13 +437,19 @@ func TestTransitions(workflowPath string, issueKey string) error {
 	return nil
 }
 
-func CreateIssue(projectKey string, summary string, description string, issueType string) (models.Issue, error) {
+func CreateIssue(projectKey string, summary string, description string, issueType string, version *models.Version) (models.Issue, error) {
+	versions := make([]models.Version, 1)
+	versions[0] = *version
+	if version == nil {
+		versions = nil
+	}
 	payload := models.Issue{
 		Fields: models.Fields{
 			Summary:     summary,
 			Project:     &models.Project{Key: projectKey},
 			Description: description,
 			IssueType:   &models.IssueType{Name: issueType},
+			FixVersions: versions,
 		},
 	}
 	response := models.Issue{}

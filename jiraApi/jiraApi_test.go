@@ -550,7 +550,7 @@ func TestCreateIssue(t *testing.T) {
 	response := "{\"id\":\"10109\",\"key\":\"TEST-16\",\"self\":\"http://jira.example.com/rest/api/2/issue/10109\"}"
 	httpmock.RegisterResponder(resty.MethodPost, "https://jira.example.com/rest/api/2/issue",
 		httpmock.NewStringResponder(201, response))
-	issue, err := CreateIssue("TEST", "test", "test", "Task")
+	issue, err := CreateIssue("TEST", "test", "test", "Task", nil)
 	if err != nil {
 		t.Errorf("TestCreateIssue: unexpected error %#v\n", err)
 	}

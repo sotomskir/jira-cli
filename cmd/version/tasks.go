@@ -26,7 +26,7 @@ import (
 // versionCreateCmd represents the versionCreate command
 var tasksCmd = &cobra.Command{
 	Use:     "tasks PROJECT_KEY VERSION ISSUETYPES",
-	Aliases: []string{"c"},
+	Aliases: []string{"t"},
 	Short:   "Get tasks in version",
 	Args:    cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {

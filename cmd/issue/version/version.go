@@ -19,6 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/sotomskir/jira-cli/jiraApi"
 	"github.com/spf13/cobra"
+	"strings"
 	"sync"
 )
 
@@ -42,13 +43,19 @@ If version does not exist it will be created`,
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
 		issueKeys := args[1:]
-
+		projectKey := strings.Split(issueKeys[0], "-")[0]
+		if create {
+			err := jiraApi.CreateFixVersion(projectKey, version, deployment, summary, description, issueType)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+		}
 		var wg sync.WaitGroup
 		for _, issueKey := range issueKeys {
 			wg.Add(1)
 			go func(issueKey string, version string) {
 				defer wg.Done()
-				err := jiraApi.AssignVersion(issueKey, version, create, deployment, summary, description, issueType)
+				err := jiraApi.SetFixVersion(issueKey, version)
 				if err == nil {
 					logrus.Infof("Success version %s set for issue %s\n", version, issueKey)
 				}
