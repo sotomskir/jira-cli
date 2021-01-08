@@ -439,9 +439,10 @@ func TestTransitions(workflowPath string, issueKey string) error {
 
 func CreateIssue(projectKey string, summary string, description string, issueType string, version *models.Version) (models.Issue, error) {
 	versions := make([]models.Version, 1)
-	versions[0] = *version
 	if version == nil {
 		versions = nil
+	} else {
+		versions[0] = *version
 	}
 	payload := models.Issue{
 		Fields: models.Fields{
